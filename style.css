@@ -56,3 +56,29 @@ p{
     margin-bottom: 16px;
     color: rgb(0, 0, 0);
 }
+
+.space-room {
+  height: 100vh;        /* 画面一枚ぶんの空間 */
+}
+
+.nodes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.wataame-nodes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.wata-node {
+  width: 18px;
+  height: 18px;
+  background: #bebebe;      /* ワタアメ初期の“無色の点” */
+  border-radius: 50%;
+}
+

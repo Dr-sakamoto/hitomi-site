@@ -15,3 +15,5 @@ setInterval(updateClock, 1000);
 
 //updateClockの終わりサイン
 updateClock();
+
+
