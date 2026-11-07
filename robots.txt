@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dr-sakamoto.github.io/hitomi-site/sitemap.xml

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{WORK}}({{RANGE}})日本語訳|{{AUTHOR}}|ほらあな哲学書庫</title>
+    <meta name="description" content="{{DESC}}">
+    <link rel="canonical" href="{{URL}}">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="ほらあな哲学書庫">
+    <meta property="og:title" content="{{WORK}}({{RANGE}})日本語訳|{{AUTHOR}}">
+    <meta property="og:description" content="{{DESC}}">
+    <meta property="og:url" content="{{URL}}">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap">
+    <link rel="stylesheet" href="reader.css">
+    <script type="application/ld+json">
+{{JSONLD}}
+    </script>
+</head>
+
+<body class="book-page">
+
+<header class="topbar">
+    <a href="../book.html">← 書棚</a>
+    <div class="bar-title">{{WORK}} / {{AUTHOR}}</div>
+    <div class="bar-tools">
+        <button id="mode" type="button">横書き</button>
+        <button id="smaller" type="button" aria-label="文字を小さく">A−</button>
+        <button id="larger" type="button" aria-label="文字を大きく">A＋</button>
+    </div>
+</header>
+
+<main class="book" id="book">
+    <article class="pages" id="pages">
+
+    <div class="cover">
+        <h1>{{WORK}}</h1>
+        <div class="author">{{AUTHOR}}({{DATES}})</div>
+        <div class="range">{{RANGE}} ／ {{LANG}}原典より</div>
+        <div class="shelf-mark">ほらあな哲学書庫</div>
+    </div>
+
+    {{BODY}}
+
+    </article>
+</main>
+
+<footer class="pager">
+    <button id="left" type="button" aria-label="左のページへ">‹</button>
+    <div class="progress"><div id="bar"></div></div>
+    <span id="count"></span>
+    <button id="right" type="button" aria-label="右のページへ">›</button>
+</footer>
+
+<script src="reader.js"></script>
+
+</body>
+
+</html>
