@@ -538,6 +538,9 @@ body.vertical .progress {
     .js .pages { overflow: visible; columns: auto !important; height: auto !important; }
 }
 
+/* インラインの style 属性は CSP で止まるので、ここにまとめる */
+.align-right { text-align: right; }
+
 /* --- ルビ --- */
 .pages ruby { ruby-position: over; }
 .pages rt {
