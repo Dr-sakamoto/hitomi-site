@@ -83,6 +83,11 @@ body.book-page {
 }
 
 .topbar a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 8px;
+    margin-left: -8px;
     color: var(--ink);
     text-decoration: none;
     white-space: nowrap;
@@ -110,8 +115,18 @@ body.book-page {
     background: transparent;
     border: 1px solid var(--line);
     border-radius: 4px;
-    padding: 4px 8px;
+    padding: 4px 12px;
+    min-height: 40px;
     cursor: pointer;
+}
+
+/* ページ送りは指で押しやすい大きさに */
+.pager button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    font-size: 24px;
+    line-height: 1;
 }
 
 .topbar button:hover,
@@ -279,11 +294,11 @@ body.vertical .note {
 /* --- 読書設定パネル --- */
 .settings {
     position: fixed;
-    top: 52px;
+    top: 64px;
     right: 12px;
     z-index: 10;
     width: min(320px, calc(100vw - 24px));
-    max-height: calc(100dvh - 72px);
+    max-height: calc(100dvh - 76px);
     overflow-y: auto;
     background: var(--bar);
     color: var(--ink);
@@ -305,14 +320,27 @@ body.vertical .note {
 }
 
 .settings-head button,
-#settings-reset {
+.settings-foot button {
     font: inherit;
     color: var(--ink);
     background: transparent;
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 2px 10px;
+    min-height: 40px;
     cursor: pointer;
+}
+
+.settings-head button,
+.info-head button {
+    min-width: 40px;
+    font-size: 18px;
+}
+
+.settings-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .settings fieldset {
@@ -387,11 +415,11 @@ body.vertical .note {
 .js .book-info {
     display: none;
     position: fixed;
-    top: 52px;
+    top: 64px;
     right: 12px;
     z-index: 10;
     width: min(440px, calc(100vw - 24px));
-    max-height: calc(100dvh - 72px);
+    max-height: calc(100dvh - 76px);
     overflow-y: auto;
     background: var(--bar);
     color: var(--ink);
@@ -418,6 +446,7 @@ body.vertical .note {
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 2px 10px;
+    min-height: 40px;
     cursor: pointer;
 }
 
@@ -452,6 +481,68 @@ body.vertical .author-note {
 
 .pages .author-note p {
     text-indent: 0;
+}
+
+/* --- めくり方の案内 --- */
+.tap-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+    border-radius: 3px;
+    padding: 16px;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
+    animation: turn .3s ease-out;
+}
+
+.tap-hint[hidden] { display: none; }
+
+.hint-zones {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    gap: 8px;
+    min-height: 0;
+}
+
+.hint-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4em;
+    text-align: center;
+    border: 2px dashed var(--line);
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.hint-center {
+    font-weight: 400;
+    font-size: .85em;
+    color: var(--ink-soft);
+}
+
+.hint-arrow {
+    font-size: 2em;
+    line-height: 1;
+    color: var(--accent);
+}
+
+.hint-text {
+    margin: 0;
+    text-align: center;
+}
+
+/* 中央タップでバーを隠し、紙面を広く使う */
+body.immersive .topbar,
+body.immersive .pager {
+    display: none;
 }
 
 /* --- 下のページ送り --- */
@@ -529,6 +620,9 @@ body.vertical .progress {
     .bar-tools {
         margin-left: auto;
     }
+
+    .hint-zone { font-size: 13px; flex-direction: column; }
+    .hint-text { font-size: 13px; }
 }
 
 @media print {
