@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!--
+  OGP画像(1200×630)の原版。公開ページではない。
+  ?title=作品名&author=著者&note=一行説明&color=%232f4a5c で作品用、引数なしで書庫全体用。
+  例:npx playwright screenshot --viewport-size=1200,630 --wait-for-timeout=1500 \
+        "file://$PWD/ogp/_card.html?title=…&author=…&note=…&color=%232f4a5c" ogp/<作品ファイル名>.png
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap">
+<style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+    body {
+        font-family: "Noto Serif JP", serif;
+        background: #e8e1d2;
+        color: #2b2620;
+        display: flex;
+        align-items: center;
+        padding: 56px 72px;
+        gap: 72px;
+        position: relative;
+    }
+    body::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 34px;
+        background: linear-gradient(#b89a72, #8f7350);
+    }
+    .cover {
+        flex: none;
+        width: 300px;
+        height: 450px;
+        margin-bottom: 26px;
+        padding: 30px 24px 22px;
+        border-radius: 3px 10px 10px 3px;
+        background: var(--cover, #5b3a2e);
+        color: #f6efe2;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: inset 10px 0 0 rgba(0,0,0,.18), inset 12px 0 0 rgba(255,255,255,.08), 0 18px 34px rgba(0,0,0,.25);
+    }
+    .cover .t {
+        writing-mode: vertical-rl;
+        align-self: flex-end;
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: .12em;
+        line-height: 1.4;
+        max-height: 330px;
+        border: 1.5px solid rgba(246,239,226,.5);
+        padding: 16px 10px;
+        background: rgba(0,0,0,.08);
+    }
+    .cover .a { font-size: 22px; letter-spacing: .1em; }
+    .text { flex: 1; min-width: 0; margin-bottom: 26px; }
+    .site { font-size: 28px; letter-spacing: .2em; color: #8a2f24; font-weight: 700; }
+    h1 { font-size: 58px; line-height: 1.35; margin: 18px 0 14px; letter-spacing: .04em; }
+    .by { font-size: 30px; color: #6f665a; }
+    .note { font-size: 26px; line-height: 1.7; margin-top: 26px; color: #2b2620; }
+    .home h1 { font-size: 76px; letter-spacing: .12em; }
+</style>
+</head>
+<body>
+    <div class="cover" id="cover"><span class="t" id="ct"></span><span class="a" id="ca"></span></div>
+    <div class="text">
+        <div class="site">ほらあな哲学書庫</div>
+        <h1 id="title"></h1>
+        <div class="by" id="by"></div>
+        <div class="note" id="note"></div>
+    </div>
+<script>
+    var q = new URLSearchParams(location.search);
+    var title = q.get('title'), author = q.get('author') || '';
+    if (q.get('color')) document.getElementById('cover').style.setProperty('--cover', q.get('color'));
+    if (title) {
+        document.getElementById('ct').textContent = title;
+        document.getElementById('ca').textContent = author;
+        document.getElementById('title').textContent = title + '(全訳)';
+        document.getElementById('by').textContent = author + ' ／ 原典からの日本語訳';
+        document.getElementById('note').textContent = q.get('note') || '';
+    } else {
+        document.body.classList.add('home');
+        document.querySelector('.site').textContent = '西洋哲学の古典を、全文日本語訳で';
+        document.getElementById('ct').textContent = '哲学書庫';
+        document.getElementById('ca').textContent = 'ほらあな';
+        document.getElementById('title').textContent = 'ほらあな哲学書庫';
+        document.getElementById('note').textContent = '青空文庫にない古典を、原典から全訳して無料公開。';
+    }
+</script>
+</body>
+</html>
