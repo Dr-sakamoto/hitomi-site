@@ -1,6 +1,7 @@
 // ===== ほらあな哲学書庫 ビューワー =====
 // 本文(#pages)を CSS 段組みでページに分け、クリック・キー・スワイプでめくる。
-// 縦書き/横書き、文字サイズ、読んでいた位置はブラウザに記憶する。
+// 読書設定(書字方向・文字サイズ・1ページの行数・1行の文字数・行間・書体・背景)と
+// 読んでいた位置は、この端末のブラウザに記憶する。
 
 (function () {
     var root = document.documentElement;
@@ -12,6 +13,16 @@
     var GAP = 80;           // ページとページのすき間(px)
     var page = 0;
     var total = 1;
+
+    var DEFAULTS = {
+        mode: 'vertical',   // vertical | horizontal
+        fs: 18,             // 文字サイズ(px)
+        lines: 0,           // 1ページの行数(0 = 画面に合わせる)
+        chars: 0,           // 1行の文字数(0 = 画面に合わせる)
+        lh: 1.85,           // 行間
+        font: 'mincho',     // mincho | gothic
+        theme: 'auto'       // auto | paper | white | dark
+    };
 
     function load(key, fallback) {
         try {
@@ -28,11 +39,74 @@
         } catch (e) { /* 保存できない環境でも読めればよい */ }
     }
 
-    var vertical = load('mode', 'vertical') === 'vertical';
-    var fontSize = parseInt(load('fs', '18'), 10) || 18;
+    var settings = (function () {
+        var s = {};
+        var stored = {};
+        try { stored = JSON.parse(load('settings', '{}')) || {}; } catch (e) { stored = {}; }
+        // 以前の版の保存値を引き継ぐ
+        if (!stored.mode && load('mode', null)) { stored.mode = load('mode', null); }
+        if (!stored.fs && load('fs', null)) { stored.fs = parseInt(load('fs', null), 10); }
+        for (var k in DEFAULTS) { s[k] = stored[k] !== undefined ? stored[k] : DEFAULTS[k]; }
+        return s;
+    })();
+
+    function saveSettings() { save('settings', JSON.stringify(settings)); }
+
     var posKey = 'pos:' + location.pathname;
 
-    function isVertical() { return vertical; }
+    function isVertical() { return settings.mode === 'vertical'; }
+
+    // ---------- 設定を画面に反映 ----------
+    function applyStyle() {
+        body.classList.toggle('vertical', isVertical());
+        root.style.setProperty('--fs', settings.fs + 'px');
+        root.style.setProperty('--lh', String(settings.lh));
+        root.classList.toggle('font-gothic', settings.font === 'gothic');
+        if (settings.font === 'gothic' && !document.getElementById('font-gothic-css')) {
+            // ゴシック体は選ばれたときだけ読み込む(明朝だけの人の読み込みを増やさない)
+            var link = document.createElement('link');
+            link.id = 'font-gothic-css';
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap';
+            document.head.appendChild(link);
+            if (document.fonts && document.fonts.load) {
+                document.fonts.load('16px "Noto Sans JP"').then(function () { layout(true); });
+            }
+        }
+        if (settings.theme === 'auto') {
+            root.removeAttribute('data-theme');
+        } else {
+            root.setAttribute('data-theme', settings.theme);
+        }
+        var modeBtn = document.getElementById('mode');
+        if (modeBtn) { modeBtn.textContent = isVertical() ? '横書き' : '縦書き'; }
+    }
+
+    // 紙面の大きさを、行数・文字数の設定と画面の大きさから決める
+    function sizePages() {
+        var cs = getComputedStyle(book);
+        var availW = book.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        var availH = book.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        var lineStep = settings.fs * settings.lh;   // 1行が占める幅
+        var w = availW;
+        var h = availH;
+        if (isVertical()) {
+            if (settings.lines) { w = Math.min(availW, settings.lines * lineStep); }
+            if (settings.chars) { h = Math.min(availH, settings.chars * settings.fs); }
+        } else {
+            if (settings.lines) { h = Math.min(availH, settings.lines * lineStep); }
+            if (settings.chars) { w = Math.min(availW, settings.chars * settings.fs); }
+        }
+        pages.style.width = Math.floor(w) + 'px';
+        pages.style.height = Math.floor(h) + 'px';
+        // 実際の行数・文字数を設定パネルに表示する
+        var info = document.getElementById('fit-info');
+        if (info) {
+            var nLines = Math.floor((isVertical() ? w : h) / lineStep);
+            var nChars = Math.floor((isVertical() ? h : w) / settings.fs);
+            info.textContent = 'いまの紙面:1ページ約' + nLines + '行 × 1行約' + nChars + '字';
+        }
+    }
 
     function pageSize() {
         return isVertical() ? pages.clientHeight : pages.clientWidth;
@@ -40,20 +114,18 @@
 
     function layout(keepRatio) {
         var ratio = total > 1 ? page / (total - 1) : 0;
-        body.classList.toggle('vertical', vertical);
-        root.style.setProperty('--fs', fontSize + 'px');
-        pages.style.columnWidth = 'auto';
+        applyStyle();
+        sizePages();
         pages.style.columnGap = GAP + 'px';
         // 1段の幅(縦書きなら高さ)を紙面と同じにする → 1段 = 1ページ
+        pages.style.columnWidth = pageSize() + 'px';
         var size = pageSize();
-        pages.style.columnWidth = size + 'px';
         var scrollSize = isVertical() ? pages.scrollHeight : pages.scrollWidth;
         total = Math.max(1, Math.round((scrollSize + GAP) / (size + GAP)));
         if (keepRatio) {
             page = Math.round(ratio * (total - 1));
         }
         go(page, false);
-        document.getElementById('mode').textContent = vertical ? '横書き' : '縦書き';
     }
 
     function go(n, animate) {
@@ -83,34 +155,136 @@
     function goLeft() { if (isVertical()) { next(); } else { prev(); } }
     function goRight() { if (isVertical()) { prev(); } else { next(); } }
 
-    root.classList.add('js');
+    // ---------- 設定パネル ----------
+    function option(value, label, current) {
+        return '<option value="' + value + '"' + (String(value) === String(current) ? ' selected' : '') + '>' + label + '</option>';
+    }
 
-    // 保存された位置から再開
+    function radio(name, value, label, current) {
+        return '<label><input type="radio" name="' + name + '" value="' + value + '"' +
+            (String(value) === String(current) ? ' checked' : '') + '> ' + label + '</label>';
+    }
+
+    function buildPanel() {
+        var tools = document.querySelector('.bar-tools');
+        // 古いページにある文字サイズボタンは設定パネルにまとめる
+        ['smaller', 'larger'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { el.remove(); }
+        });
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'settings-btn';
+        btn.textContent = '設定';
+        btn.setAttribute('aria-expanded', 'false');
+        btn.setAttribute('aria-controls', 'settings');
+        tools.appendChild(btn);
+
+        var lineOpts = [0, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32];
+        var charOpts = [0, 20, 25, 30, 35, 40, 45, 50];
+        var lhOpts = [[1.6, '狭い'], [1.85, '標準'], [2.1, '広い'], [2.4, 'とても広い']];
+
+        var panel = document.createElement('div');
+        panel.id = 'settings';
+        panel.className = 'settings';
+        panel.hidden = true;
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-label', '読書設定');
+        panel.innerHTML =
+            '<div class="settings-head"><b>読書設定</b><button type="button" id="settings-close" aria-label="閉じる">×</button></div>' +
+            '<fieldset><legend>書字方向</legend>' +
+                radio('mode', 'vertical', '縦書き', settings.mode) +
+                radio('mode', 'horizontal', '横書き', settings.mode) +
+            '</fieldset>' +
+            '<label class="row">文字サイズ <output id="fs-out">' + settings.fs + 'px</output>' +
+                '<input type="range" id="set-fs" min="14" max="28" step="1" value="' + settings.fs + '"></label>' +
+            '<label class="row">1ページの行数 <select id="set-lines">' +
+                lineOpts.map(function (n) { return option(n, n ? n + '行' : '画面に合わせる', settings.lines); }).join('') +
+            '</select></label>' +
+            '<label class="row">1行の文字数 <select id="set-chars">' +
+                charOpts.map(function (n) { return option(n, n ? n + '字' : '画面に合わせる', settings.chars); }).join('') +
+            '</select></label>' +
+            '<label class="row">行間 <select id="set-lh">' +
+                lhOpts.map(function (o) { return option(o[0], o[1], settings.lh); }).join('') +
+            '</select></label>' +
+            '<fieldset><legend>書体</legend>' +
+                radio('font', 'mincho', '明朝', settings.font) +
+                radio('font', 'gothic', 'ゴシック', settings.font) +
+            '</fieldset>' +
+            '<fieldset><legend>背景</legend>' +
+                radio('theme', 'auto', '自動', settings.theme) +
+                radio('theme', 'paper', '紙', settings.theme) +
+                radio('theme', 'white', '白', settings.theme) +
+                radio('theme', 'dark', '黒', settings.theme) +
+            '</fieldset>' +
+            '<p class="fit-info" id="fit-info"></p>' +
+            '<p class="fit-note">画面に入りきらない行数・文字数を選ぶと、画面に入るぶんだけ表示します。</p>' +
+            '<button type="button" id="settings-reset">初期設定に戻す</button>';
+        body.appendChild(panel);
+
+        function openPanel(open) {
+            panel.hidden = !open;
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
+        btn.addEventListener('click', function () { openPanel(panel.hidden); });
+        document.getElementById('settings-close').addEventListener('click', function () { openPanel(false); btn.focus(); });
+
+        function update(key, value) {
+            settings[key] = value;
+            saveSettings();
+            layout(true);
+        }
+
+        panel.addEventListener('change', function (e) {
+            var t = e.target;
+            if (t.name === 'mode' || t.name === 'font' || t.name === 'theme') { update(t.name, t.value); }
+            else if (t.id === 'set-lines') { update('lines', parseInt(t.value, 10)); }
+            else if (t.id === 'set-chars') { update('chars', parseInt(t.value, 10)); }
+            else if (t.id === 'set-lh') { update('lh', parseFloat(t.value)); }
+        });
+
+        var fsInput = document.getElementById('set-fs');
+        fsInput.addEventListener('input', function () {
+            document.getElementById('fs-out').textContent = fsInput.value + 'px';
+            update('fs', parseInt(fsInput.value, 10));
+        });
+
+        document.getElementById('settings-reset').addEventListener('click', function () {
+            for (var k in DEFAULTS) { settings[k] = DEFAULTS[k]; }
+            saveSettings();
+            panel.remove();
+            btn.remove();
+            buildPanel();
+            layout(true);
+            document.getElementById('settings').hidden = false;
+        });
+
+        return { open: openPanel, panel: panel };
+    }
+
+    // ---------- 起動 ----------
+    root.classList.add('js');
+    var settingsUI = buildPanel();
+
     var savedRatio = parseFloat(load(posKey, '0')) || 0;
     layout(false);
     page = Math.round(savedRatio * (total - 1));
     go(page, false);
 
+    var modeBtn = document.getElementById('mode');
+    if (modeBtn) {
+        modeBtn.addEventListener('click', function () {
+            settings.mode = isVertical() ? 'horizontal' : 'vertical';
+            saveSettings();
+            var r = document.querySelector('#settings input[name="mode"][value="' + settings.mode + '"]');
+            if (r) { r.checked = true; }
+            layout(true);
+        });
+    }
+
     document.getElementById('left').addEventListener('click', goLeft);
     document.getElementById('right').addEventListener('click', goRight);
-
-    document.getElementById('mode').addEventListener('click', function () {
-        vertical = !vertical;
-        save('mode', vertical ? 'vertical' : 'horizontal');
-        layout(true);
-    });
-
-    document.getElementById('smaller').addEventListener('click', function () {
-        fontSize = Math.max(14, fontSize - 2);
-        save('fs', String(fontSize));
-        layout(true);
-    });
-
-    document.getElementById('larger').addEventListener('click', function () {
-        fontSize = Math.min(28, fontSize + 2);
-        save('fs', String(fontSize));
-        layout(true);
-    });
 
     // 紙面の左右をタップしてめくる(リンクのクリックは除く)
     book.addEventListener('click', function (e) {
@@ -121,6 +295,12 @@
     });
 
     document.addEventListener('keydown', function (e) {
+        var panelEl = document.getElementById('settings');
+        if (e.key === 'Escape' && panelEl && !panelEl.hidden) {
+            panelEl.hidden = true;
+            return;
+        }
+        if (panelEl && !panelEl.hidden && e.target.closest && e.target.closest('#settings')) { return; }
         if (e.key === 'ArrowLeft') { goLeft(); e.preventDefault(); }
         else if (e.key === 'ArrowRight') { goRight(); e.preventDefault(); }
         else if (e.key === ' ' || e.key === 'PageDown') { next(); e.preventDefault(); }
@@ -156,4 +336,6 @@
     if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(function () { layout(true); });
     }
+
+    void settingsUI;
 })();
