@@ -87,7 +87,7 @@ const SITE = data.site;
 if (!/^https:\/\/.+\/$/.test(SITE.url || '')) { errors.push('works.json: site.url は https:// で始まり / で終わる URL にする'); }
 
 const REQUIRED = ['slug', 'title', 'author', 'authorDates', 'year', 'language', 'range',
-    'originalTitle', 'description', 'shelfNote', 'coverColor', 'updated'];
+    'originalTitle', 'description', 'shelfNote', 'genre', 'updated'];
 const seen = new Set();
 const works = data.works.filter((w, n) => {
     const where = `works.json の works[${n}]${w.slug ? '(' + w.slug + ')' : ''}`;
@@ -96,7 +96,10 @@ const works = data.works.filter((w, n) => {
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(w.slug)) { errors.push(`${where}: slug は半角英小文字・数字・ハイフンだけにする`); return false; }
     if (seen.has(w.slug)) { errors.push(`${where}: slug が重複している`); return false; }
     seen.add(w.slug);
-    if (!/^#[0-9a-fA-F]{6}$/.test(w.coverColor)) { errors.push(`${where}: coverColor は #rrggbb の形にする`); }
+    // 表紙の色はジャンルで決まる(works.json の genres)。サムネイル・動画と同じ色
+    w.coverColor = (data.genres || {})[w.genre];
+    if (!w.coverColor) { errors.push(`${where}: genre「${w.genre}」が works.json の genres にない`); }
+    else if (!/^#[0-9a-fA-F]{6}$/.test(w.coverColor)) { errors.push(`works.json の genres「${w.genre}」は #rrggbb の形にする`); }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(w.updated)) { errors.push(`${where}: updated は YYYY-MM-DD の形にする`); }
     for (const f of ['body.html', 'info.html']) {
         if (!exists(`_works/${w.slug}/${f}`)) { errors.push(`${where}: _works/${w.slug}/${f} がない`); return false; }
