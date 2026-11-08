@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ほらあな哲学書庫|西洋哲学の古典を全文日本語訳で無料公開</title>
     <meta name="description" content="カント「啓蒙とは何か」、フロイト「精神分析のある困難」など、青空文庫にない西洋哲学の古典を原典から日本語に全文翻訳して無料公開。縦書きの本のようなビューワーで読めます。">
@@ -64,7 +66,7 @@
     <h2 class="section-title">書棚</h2>
     <ul class="shelf">
         <li>
-            <a class="book-cover" href="philosophy/kant-aufklaerung.html" style="--cover:#2f4a5c">
+            <a class="book-cover" href="philosophy/kant-aufklaerung.html" data-cover="kant">
                 <span class="badge">全訳</span>
                 <span class="title">啓蒙とは何か</span>
                 <span class="author">カント</span>
@@ -72,7 +74,7 @@
             <div class="book-info">1784年/ドイツ語原典より。「あえて賢くあれ、自分の悟性を用いる勇気をもて」。</div>
         </li>
         <li>
-            <a class="book-cover" href="philosophy/freud-difficulty.html" style="--cover:#5b3a2e">
+            <a class="book-cover" href="philosophy/freud-difficulty.html" data-cover="freud">
                 <span class="badge">全訳</span>
                 <span class="title">精神分析のある困難</span>
                 <span class="author">フロイト</span>

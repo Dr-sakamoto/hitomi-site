@@ -46,9 +46,23 @@
         // 以前の版の保存値を引き継ぐ
         if (!stored.mode && load('mode', null)) { stored.mode = load('mode', null); }
         if (!stored.fs && load('fs', null)) { stored.fs = parseInt(load('fs', null), 10); }
-        for (var k in DEFAULTS) { s[k] = stored[k] !== undefined ? stored[k] : DEFAULTS[k]; }
+        for (var k in DEFAULTS) { s[k] = valid(k, stored[k]) ? stored[k] : DEFAULTS[k]; }
         return s;
     })();
+
+    // 保存値は HTML にも埋め込むので、決まった形の値だけを受け入れる
+    function valid(key, v) {
+        switch (key) {
+            case 'mode': return v === 'vertical' || v === 'horizontal';
+            case 'font': return v === 'mincho' || v === 'gothic';
+            case 'theme': return v === 'auto' || v === 'paper' || v === 'white' || v === 'dark';
+            case 'fs': return typeof v === 'number' && v % 1 === 0 && v >= 14 && v <= 28;
+            case 'lines': return typeof v === 'number' && v % 1 === 0 && v >= 0 && v <= 40;
+            case 'chars': return typeof v === 'number' && v % 1 === 0 && v >= 0 && v <= 60;
+            case 'lh': return typeof v === 'number' && v >= 1.2 && v <= 3;
+            default: return false;
+        }
+    }
 
     function saveSettings() { save('settings', JSON.stringify(settings)); }
 
