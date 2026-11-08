@@ -49,16 +49,18 @@
 - Playwright で対象ページを開き、JS エラーがないこと、縦書き・横書きの両方でページ数が表示されることを確かめる。
 - 公開した回は、`index.html` から新しいページへのリンクが切れていないことも確かめる。
 
-## 全訳計画(この順に、これで終わり)
+## 全訳計画(有名な順。この順に進め、これで終わり)
+
+日本での知名度・検索での需要が大きい順に並べている。
 
 | # | 作品 | 原典 | 下書き | 状態 |
 |---|---|---|---|---|
 | 1 | プラトン『ソクラテスの弁明』 | ギリシア語(Perseus) | `_drafts/plato-apology.html` | 翻訳中 |
-| 2 | エピクテトス『提要(エンケイリディオン)』全53章 | ギリシア語(Perseus) | `_drafts/enchiridion.html` | 翻訳中 |
-| 3 | セネカ『人生の短さについて』全20章 | ラテン語(The Latin Library) | `_drafts/brevitate.html` | 翻訳中 |
-| 4 | デカルト『方法序説』全6部 | フランス語(Gutenberg #13846) | `_drafts/descartes-methode.html` | 翻訳中 |
+| 2 | デカルト『方法序説』全6部 | フランス語(Gutenberg #13846) | `_drafts/descartes-methode.html` | 翻訳中 |
+| 3 | マルクス・アウレリウス『自省録』全12巻 | ギリシア語 | `_drafts/meditations.html` | 翻訳中 |
+| 4 | セネカ『人生の短さについて』全20章 | ラテン語(The Latin Library) | `_drafts/brevitate.html` | 翻訳中 |
 | 5 | カント『永遠平和のために』 | ドイツ語(Gutenberg) | なし | 未着手 |
-| 6 | ボエティウス『哲学の慰め』全5巻 | ラテン語 | `_drafts/consolatio.html` | 翻訳中 |
-| 7 | マルクス・アウレリウス『自省録』全12巻 | ギリシア語 | `_drafts/meditations.html` | 翻訳中 |
+| 6 | エピクテトス『提要(エンケイリディオン)』全53章 | ギリシア語(Perseus) | `_drafts/enchiridion.html` | 翻訳中 |
+| 7 | ボエティウス『哲学の慰め』全5巻 | ラテン語 | `_drafts/consolatio.html` | 翻訳中 |
 
 **この表の作品がすべて「公開済み」になったら、追加作業は終了。** 定期実行はそれ以上新しい作品を始めず、終了を報告する。
