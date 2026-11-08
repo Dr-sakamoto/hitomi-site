@@ -537,3 +537,14 @@ body.vertical .progress {
     .book { box-shadow: none; width: auto; margin: 0; }
     .js .pages { overflow: visible; columns: auto !important; height: auto !important; }
 }
+
+/* --- ルビ --- */
+.pages ruby { ruby-position: over; }
+.pages rt {
+    font-size: .5em;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+.pages rp { display: none; }
+.ruby-none .pages rt { display: none; }
