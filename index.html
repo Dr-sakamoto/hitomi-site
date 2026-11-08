@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ほらあな哲学書庫|西洋哲学の古典を全文日本語訳で無料公開</title>
     <meta name="description" content="カント「啓蒙とは何か」、フロイト「精神分析のある困難」など、青空文庫にない西洋哲学の古典を原典から日本語に全文翻訳して無料公開。縦書きの本のようなビューワーで読めます。">
@@ -50,6 +52,7 @@
 }
     </script>
     <script src="site.js" defer></script>
+    <script src="shelf.js" defer></script>
 </head>
 
 <body>
@@ -62,24 +65,68 @@
 <main class="wrap">
 
     <h2 class="section-title">書棚</h2>
+
+    <div class="profile-bar" id="profile-bar">
+        <div class="profile-row">
+            <label for="profile-select">ユーザー</label>
+            <select id="profile-select" aria-label="本棚のユーザーを切り替え"></select>
+            <button type="button" id="profile-add">追加</button>
+            <button type="button" id="profile-rename">名前変更</button>
+            <button type="button" id="profile-delete" hidden>削除</button>
+        </div>
+        <div class="filter-row" role="group" aria-label="本棚の絞り込み">
+            <button type="button" data-filter="all" aria-pressed="true">すべて</button>
+            <button type="button" data-filter="want" aria-pressed="false">読みたい</button>
+            <button type="button" data-filter="reading" aria-pressed="false">読書中</button>
+            <button type="button" data-filter="done" aria-pressed="false">読了</button>
+            <button type="button" data-filter="fav" aria-pressed="false">お気に入り</button>
+        </div>
+        <p class="profile-note">本棚の記録はこの端末のブラウザにだけ保存され、サーバーには送られません。</p>
+    </div>
+
     <ul class="shelf">
-        <li>
-            <a class="book-cover" href="philosophy/kant-aufklaerung.html" style="--cover:#2f4a5c">
+        <!-- ここから自動生成(_tools/build.mjs) -->
+        <li data-book="philosophy/kant-aufklaerung.html">
+            <a class="book-cover" href="philosophy/kant-aufklaerung.html" data-cover="kant-aufklaerung">
                 <span class="badge">全訳</span>
                 <span class="title">啓蒙とは何か</span>
                 <span class="author">カント</span>
+                <span class="progress-bar" aria-hidden="true"></span>
             </a>
             <div class="book-info">1784年/ドイツ語原典より。「あえて賢くあれ、自分の悟性を用いる勇気をもて」。</div>
+            <div class="book-meta">
+                <span class="progress-text">未読</span>
+                <select class="status-select" aria-label="「啓蒙とは何か」の読書状態">
+                    <option value="">未設定</option>
+                    <option value="want">読みたい</option>
+                    <option value="reading">読書中</option>
+                    <option value="done">読了</option>
+                </select>
+                <button type="button" class="fav-btn" aria-pressed="false" aria-label="「啓蒙とは何か」をお気に入りにする">☆</button>
+            </div>
         </li>
-        <li>
-            <a class="book-cover" href="philosophy/freud-difficulty.html" style="--cover:#5b3a2e">
+        <li data-book="philosophy/freud-difficulty.html">
+            <a class="book-cover" href="philosophy/freud-difficulty.html" data-cover="freud-difficulty">
                 <span class="badge">全訳</span>
                 <span class="title long">精神分析のある困難</span>
                 <span class="author">フロイト</span>
+                <span class="progress-bar" aria-hidden="true"></span>
             </a>
             <div class="book-info">1917年/ドイツ語原典より。「自我は自分自身の家の主人ではない」。</div>
+            <div class="book-meta">
+                <span class="progress-text">未読</span>
+                <select class="status-select" aria-label="「精神分析のある困難」の読書状態">
+                    <option value="">未設定</option>
+                    <option value="want">読みたい</option>
+                    <option value="reading">読書中</option>
+                    <option value="done">読了</option>
+                </select>
+                <button type="button" class="fav-btn" aria-pressed="false" aria-label="「精神分析のある困難」をお気に入りにする">☆</button>
+            </div>
         </li>
+        <!-- ここまで自動生成 -->
     </ul>
+    <p class="shelf-empty" id="shelf-empty" hidden>この条件に合う本はありません。</p>
 
     <h2 class="section-title">この書庫について</h2>
     <div class="about">
