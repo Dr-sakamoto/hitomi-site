@@ -1,68 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
-
     <meta charset="UTF-8">
-    <title>坂本瞳のほらあな|ホーム</title>
-    <link rel="stylesheet" href="style.css">
-
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ほらあな哲学書庫|西洋哲学の古典を全文日本語訳で無料公開</title>
+    <meta name="description" content="カント「啓蒙とは何か」、フロイト「精神分析のある困難」など、青空文庫にない西洋哲学の古典を原典から日本語に全文翻訳して無料公開。縦書きの本のようなビューワーで読めます。">
+    <link rel="canonical" href="https://dr-sakamoto.github.io/hitomi-site/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ほらあな哲学書庫">
+    <meta property="og:title" content="ほらあな哲学書庫|西洋哲学の古典を全文日本語訳で無料公開">
+    <meta property="og:description" content="青空文庫にない西洋哲学の古典を、原典から日本語に全文翻訳して無料公開。">
+    <meta property="og:url" content="https://dr-sakamoto.github.io/hitomi-site/">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap">
+    <link rel="stylesheet" href="site.css">
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "ほらあな哲学書庫",
+  "description": "青空文庫にない西洋哲学の古典を、原典から日本語に全文翻訳して無料公開する書庫。",
+  "url": "https://dr-sakamoto.github.io/hitomi-site/",
+  "inLanguage": "ja",
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "url": "https://dr-sakamoto.github.io/hitomi-site/philosophy/kant-aufklaerung.html",
+        "name": "啓蒙とは何か(全訳)/カント"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "url": "https://dr-sakamoto.github.io/hitomi-site/philosophy/freud-difficulty.html",
+        "name": "精神分析のある困難(全訳)/フロイト"
+      }
+    ]
+  }
+}
+    </script>
 </head>
-
 
 <body>
 
- <section>
+<header class="masthead">
+    <h1>ほらあな哲学書庫</h1>
+    <p class="tagline">海外では原文が無料で読めるのに、日本語では青空文庫にもなく、文庫本を買わないと読めない西洋哲学の古典を、原典から日本語に全文翻訳して公開しています。</p>
+</header>
 
-    <p id="clock">時が乱れている…</p>
+<main class="wrap">
 
-    
-    <h1 class="center-title">
+    <h2 class="section-title">書棚</h2>
+    <ul class="shelf">
+        <li>
+            <a class="book-cover" href="philosophy/kant-aufklaerung.html" style="--cover:#2f4a5c">
+                <span class="badge">全訳</span>
+                <span class="title">啓蒙とは何か</span>
+                <span class="author">カント</span>
+            </a>
+            <div class="book-info">1784年/ドイツ語原典より。「あえて賢くあれ、自分の悟性を用いる勇気をもて」。</div>
+        </li>
+        <li>
+            <a class="book-cover" href="philosophy/freud-difficulty.html" style="--cover:#5b3a2e">
+                <span class="badge">全訳</span>
+                <span class="title">精神分析のある困難</span>
+                <span class="author">フロイト</span>
+            </a>
+            <div class="book-info">1917年/ドイツ語原典より。「自我は自分自身の家の主人ではない」。</div>
+        </li>
+    </ul>
 
-        <img src="images/sprites_BBA.png"class="logo">
-        坂本瞳のほらあな
+    <h2 class="section-title">翻訳中</h2>
+    <ul class="wip">
+        <li>プラトン『ソクラテスの弁明』</li>
+        <li>エピクテトス『提要(エンケイリディオン)』</li>
+        <li>セネカ『人生の短さについて』</li>
+        <li>デカルト『方法序説』</li>
+        <li>カント『永遠平和のために』</li>
+        <li>ボエティウス『哲学の慰め』</li>
+        <li>マルクス・アウレリウス『自省録』</li>
+    </ul>
 
-    </h1>
-    
+    <h2 class="section-title">この書庫について</h2>
+    <div class="about">
+        <p>ここに並ぶ本は、著作権の切れたパブリックドメインの原典(ギリシア語・ラテン語・フランス語・ドイツ語など)を、ネットで公開されている原文と照らし合わせながら、AI(Claude)が日本語に訳したものです。<b>全文を訳し終えた作品だけ</b>を書棚に並べています。</p>
+        <p>選んでいるのは、青空文庫に収録されていない作品です(青空文庫の作品目録で確認しています)。本を開くと、縦書きでページをめくって読めます。横書きへの切り替えや文字の大きさの変更もできます。</p>
+        <p>AIによる翻訳のため、誤訳や解釈の偏りがありえます。引用や研究に使うときは、各作品の奥付にある原典や、専門家による翻訳で確かめてください。</p>
+    </div>
 
-    <nav>
-    <a href="index.html">ホーム</a>
-    <a href="book.html">本</a>
-    <a href="movie.html">映画</a>
-    <a href="music.html">音楽</a>
-    <a href="art.html">アート</a>
-    <a href="space.html">空間</a>
-    <a href="etymon.html">Etymon</a>
+</main>
 
-</nav>
-
-<h1 class="chapter">
-    ホーム
-
-</h1>
-    <h2>ようこそ</h2>
-    <p>ワイはミニマリストやけん、家は殺風景や。</p>
-    <p>でも最近、村上隆のコレクション展の対談の影響でオタク的コレクションをしたくなってきてるダニ。</p>
-    <p>ネット上で虚構的に、自分の城を気付くっちゃん。(ま、自分の部屋も、モノ増やしていくけどね！)</p>
-
-    <h2>自己紹介</h2>
-    <p>私の名前は　坂本 瞳(sakamoto hitomi)　ですあ。</p>
-
-    <h3>年齢</h3>
-    <p>87歳</p>
-
-    <h3>星座</h3>
-    <P>牡羊座</P>
-</section>
-
-<section>
-    <h2>私のやりたいことリスト</h2>
-    <p>日記をつける。</p>
-    <p>コーディングをマスターする。</p>
-</section>
-
-<script src="script.js"></script>
+<footer>
+    ほらあな哲学書庫
+</footer>
 
 </body>
 
