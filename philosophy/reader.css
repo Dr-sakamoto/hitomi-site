@@ -374,6 +374,86 @@ body.vertical .note {
     color: var(--ink-soft);
 }
 
+
+/* --- この本について(解説・訳注・原典)パネル --- */
+.book-info {
+    max-width: 40em;
+    margin: 0 auto;
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.js .book-info {
+    display: none;
+    position: fixed;
+    top: 52px;
+    right: 12px;
+    z-index: 10;
+    width: min(440px, calc(100vw - 24px));
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    background: var(--bar);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .2);
+    padding: 12px 18px 18px;
+}
+
+.js .book-info.open {
+    display: block;
+}
+
+.info-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-head button {
+    font: inherit;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 2px 10px;
+    cursor: pointer;
+}
+
+.book-info section {
+    border-top: 1px solid var(--line);
+    margin-top: 10px;
+    padding-top: 8px;
+}
+
+.book-info h2 {
+    font-size: 15px;
+    margin: 0 0 6px;
+}
+
+.book-info p {
+    margin: 0 0 .6em;
+}
+
+.book-info a {
+    color: var(--accent);
+}
+
+/* 著者自身の注(作品の一部なので紙面に残す) */
+.author-note {
+    font-size: .85em;
+    margin: 1.5em 0;
+}
+
+body.vertical .author-note {
+    margin: 0 1.5em;
+}
+
+.pages .author-note p {
+    text-indent: 0;
+}
+
 /* --- 下のページ送り --- */
 .pager {
     flex: 0 0 auto;

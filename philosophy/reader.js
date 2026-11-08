@@ -263,9 +263,35 @@
         return { open: openPanel, panel: panel };
     }
 
+    // ---------- この本について(解説・訳注・原典) ----------
+    function setupInfo() {
+        var info = document.getElementById('book-info');
+        var infoBtn = document.getElementById('info-btn');
+        if (!info || !infoBtn) { return; }
+        function openInfo(open) {
+            info.classList.toggle('open', open);
+            infoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) {
+                var sp = document.getElementById('settings');
+                if (sp) { sp.hidden = true; }
+            }
+        }
+        infoBtn.addEventListener('click', function () { openInfo(!info.classList.contains('open')); });
+        var close = document.getElementById('info-close');
+        if (close) { close.addEventListener('click', function () { openInfo(false); infoBtn.focus(); }); }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && info.classList.contains('open')) { openInfo(false); }
+        });
+        // 設定を開いたら解説は閉じる
+        document.addEventListener('click', function (e) {
+            if (e.target.id === 'settings-btn') { openInfo(false); }
+        });
+    }
+
     // ---------- 起動 ----------
     root.classList.add('js');
     var settingsUI = buildPanel();
+    setupInfo();
 
     var savedRatio = parseFloat(load(posKey, '0')) || 0;
     layout(false);
@@ -301,6 +327,8 @@
             return;
         }
         if (panelEl && !panelEl.hidden && e.target.closest && e.target.closest('#settings')) { return; }
+        var infoEl = document.getElementById('book-info');
+        if (infoEl && infoEl.classList.contains('open') && e.target.closest && e.target.closest('#book-info')) { return; }
         if (e.key === 'ArrowLeft') { goLeft(); e.preventDefault(); }
         else if (e.key === 'ArrowRight') { goRight(); e.preventDefault(); }
         else if (e.key === ' ' || e.key === 'PageDown') { next(); e.preventDefault(); }
