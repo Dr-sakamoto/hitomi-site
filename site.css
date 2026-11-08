@@ -198,3 +198,21 @@ footer {
     .book-cover .title { font-size: 17px; }
     .about { padding: 20px; }
 }
+
+/* --- お問い合わせ --- */
+.about ul { margin: 0 0 1em; padding-left: 1.4em; }
+
+.contact-action { text-align: center; margin: 1.5em 0; }
+
+.button {
+    display: inline-block;
+    padding: 10px 28px;
+    border-radius: 3px;
+    background: var(--accent);
+    color: var(--paper);
+    text-decoration: none;
+    letter-spacing: .1em;
+}
+
+.button:hover, .button:focus-visible { opacity: .88; }
+.button[hidden] { display: none; }
