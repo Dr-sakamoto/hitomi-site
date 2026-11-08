@@ -4,7 +4,7 @@
 var HORAANA_CONFIG = {
     // Cloudflare Web Analytics のトークン(ダッシュボードの「JS Snippet」にある token の値)
     // Cloudflare Pages に移行して自動計測を有効にした場合は空のままでよい。
-    cloudflareAnalyticsToken: '',
+    cloudflareAnalyticsToken: 'eb7a546d01be4cb5985067653fbe7bee',
 
     // 問い合わせ用 Google フォームの URL(https://forms.gle/... など)
     contactFormUrl: ''
