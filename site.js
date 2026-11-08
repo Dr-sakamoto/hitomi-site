@@ -7,7 +7,7 @@ var HORAANA_CONFIG = {
     cloudflareAnalyticsToken: 'eb7a546d01be4cb5985067653fbe7bee',
 
     // 問い合わせ用 Google フォームの URL(https://forms.gle/... など)
-    contactFormUrl: ''
+    contactFormUrl: 'https://forms.gle/FRGHXAD7oiqfvcEV8'
 };
 
 (function () {
