@@ -68,7 +68,15 @@
 
     function saveSettings() { save('settings', JSON.stringify(settings)); }
 
-    var posKey = 'pos:' + location.pathname;
+    // 読書位置は本棚のプロフィールごとに記憶する(既定の「ゲスト」は従来のキーのまま)
+    var posKey = (function () {
+        var id = 'default';
+        try {
+            var p = JSON.parse(load('profiles', 'null'));
+            if (p && typeof p.current === 'string' && /^[a-z0-9]{1,20}$/.test(p.current)) id = p.current;
+        } catch (e) { /* 既定のまま */ }
+        return id === 'default' ? 'pos:' + location.pathname : 'p:' + id + ':pos:' + location.pathname;
+    })();
 
     function isVertical() { return settings.mode === 'vertical'; }
 
