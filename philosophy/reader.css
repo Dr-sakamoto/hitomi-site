@@ -247,10 +247,6 @@ body.vertical .note {
     margin-top: .4em;
 }
 
-.pages .signed {
-    text-align: right;
-}
-
 .pages a {
     color: var(--accent);
 }
@@ -518,3 +514,6 @@ body.vertical .progress {
     .book { box-shadow: none; width: auto; margin: 0; }
     .js .pages { overflow: visible; columns: auto !important; height: auto !important; }
 }
+
+/* インラインの style 属性は CSP で止まるので、ここにまとめる */
+.align-right { text-align: right; }
