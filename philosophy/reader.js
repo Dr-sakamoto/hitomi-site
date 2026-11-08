@@ -1,6 +1,6 @@
 // ===== ほらあな哲学書庫 ビューワー =====
 // 本文(#pages)を CSS 段組みでページに分け、クリック・キー・スワイプでめくる。
-// 読書設定(書字方向・文字サイズ・1ページの行数・1行の文字数・行間・書体・背景)と
+// 読書設定(書字方向・文字サイズ・1ページの行数・1行の文字数・行間・書体・背景・ルビ)と
 // 読んでいた位置は、この端末のブラウザに記憶する。
 
 (function () {
@@ -21,7 +21,8 @@
         chars: 0,           // 1行の文字数(0 = 画面に合わせる)
         lh: 1.85,           // 行間
         font: 'mincho',     // mincho | gothic
-        theme: 'auto'       // auto | paper | white | dark
+        theme: 'auto',      // auto | paper | white | dark
+        ruby: 'first'       // first(初出のみ)| all(すべて)| none(なし)
     };
 
     function load(key, fallback) {
@@ -56,6 +57,7 @@
             case 'mode': return v === 'vertical' || v === 'horizontal';
             case 'font': return v === 'mincho' || v === 'gothic';
             case 'theme': return v === 'auto' || v === 'paper' || v === 'white' || v === 'dark';
+            case 'ruby': return v === 'first' || v === 'all' || v === 'none';
             case 'fs': return typeof v === 'number' && v % 1 === 0 && v >= 14 && v <= 28;
             case 'lines': return typeof v === 'number' && v % 1 === 0 && v >= 0 && v <= 40;
             case 'chars': return typeof v === 'number' && v % 1 === 0 && v >= 0 && v <= 60;
@@ -92,8 +94,85 @@
         } else {
             root.setAttribute('data-theme', settings.theme);
         }
+        root.classList.toggle('ruby-none', settings.ruby === 'none');
+        setAutoRuby(settings.ruby === 'all');
         var modeBtn = document.getElementById('mode');
         if (modeBtn) { modeBtn.textContent = isVertical() ? '横書き' : '縦書き'; }
+    }
+
+    // ---------- ルビ ----------
+    // 本文の HTML には、作品で初めて出たところにだけ <ruby> を書いている。
+    // 「すべて」を選んだときは、同じ語の2回目以降にも同じ読みのルビを足す(class="ruby-auto")。
+    var autoRubyOn = false;
+
+    function rubyDictionary() {
+        var dict = {};
+        var list = pages.querySelectorAll('ruby:not(.ruby-auto)');
+        for (var i = 0; i < list.length; i++) {
+            var rt = list[i].querySelector('rt');
+            if (!rt) { continue; }
+            var base = '';
+            for (var n = list[i].firstChild; n; n = n.nextSibling) {
+                if (n.nodeType === 3) { base += n.nodeValue; }
+                else if (n.nodeName !== 'RT' && n.nodeName !== 'RP') { base += n.textContent; }
+            }
+            base = base.trim();
+            if (base && !dict[base]) { dict[base] = rt.textContent.trim(); }
+        }
+        return dict;
+    }
+
+    function setAutoRuby(on) {
+        if (on === autoRubyOn) { return; }
+        autoRubyOn = on;
+        if (!on) {
+            var autos = pages.querySelectorAll('ruby.ruby-auto');
+            for (var i = 0; i < autos.length; i++) {
+                var r = autos[i];
+                var parent = r.parentNode;
+                parent.replaceChild(document.createTextNode(r.getAttribute('data-base')), r);
+                parent.normalize();
+            }
+            return;
+        }
+        var dict = rubyDictionary();
+        var words = Object.keys(dict).sort(function (a, b) { return b.length - a.length; });
+        if (!words.length) { return; }
+        var re = new RegExp(words.map(function (w) {
+            return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }).join('|'), 'g');
+        var walker = document.createTreeWalker(pages, NodeFilter.SHOW_TEXT, {
+            acceptNode: function (node) {
+                var el = node.parentNode;
+                if (el.closest('ruby, .cover, script, style')) { return NodeFilter.FILTER_REJECT; }
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+        var targets = [];
+        while (walker.nextNode()) { targets.push(walker.currentNode); }
+        targets.forEach(function (node) {
+            var text = node.nodeValue;
+            re.lastIndex = 0;
+            if (!re.test(text)) { return; }
+            re.lastIndex = 0;
+            var frag = document.createDocumentFragment();
+            var last = 0;
+            text.replace(re, function (m, offset) {
+                if (offset > last) { frag.appendChild(document.createTextNode(text.slice(last, offset))); }
+                var ruby = document.createElement('ruby');
+                ruby.className = 'ruby-auto';
+                ruby.setAttribute('data-base', m);
+                ruby.appendChild(document.createTextNode(m));
+                var rt = document.createElement('rt');
+                rt.textContent = dict[m];
+                ruby.appendChild(rt);
+                frag.appendChild(ruby);
+                last = offset + m.length;
+                return m;
+            });
+            if (last < text.length) { frag.appendChild(document.createTextNode(text.slice(last))); }
+            node.parentNode.replaceChild(frag, node);
+        });
     }
 
     // 紙面の大きさを、行数・文字数の設定と画面の大きさから決める
@@ -231,6 +310,11 @@
                 radio('theme', 'white', '白', settings.theme) +
                 radio('theme', 'dark', '黒', settings.theme) +
             '</fieldset>' +
+            '<fieldset><legend>ルビ</legend>' +
+                radio('ruby', 'first', '初出のみ', settings.ruby) +
+                radio('ruby', 'all', 'すべて', settings.ruby) +
+                radio('ruby', 'none', 'なし', settings.ruby) +
+            '</fieldset>' +
             '<p class="fit-info" id="fit-info"></p>' +
             '<p class="fit-note">画面に入りきらない行数・文字数を選ぶと、画面に入るぶんだけ表示します。</p>' +
             '<button type="button" id="settings-reset">初期設定に戻す</button>';
@@ -252,7 +336,7 @@
 
         panel.addEventListener('change', function (e) {
             var t = e.target;
-            if (t.name === 'mode' || t.name === 'font' || t.name === 'theme') { update(t.name, t.value); }
+            if (t.name === 'mode' || t.name === 'font' || t.name === 'theme' || t.name === 'ruby') { update(t.name, t.value); }
             else if (t.id === 'set-lines') { update('lines', parseInt(t.value, 10)); }
             else if (t.id === 'set-chars') { update('chars', parseInt(t.value, 10)); }
             else if (t.id === 'set-lh') { update('lh', parseFloat(t.value)); }
