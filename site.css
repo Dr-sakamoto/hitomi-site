@@ -216,3 +216,9 @@ footer {
 
 .button:hover, .button:focus-visible { opacity: .88; }
 .button[hidden] { display: none; }
+
+/* インラインの style 属性は CSP で止まるので、ここにまとめる */
+.home-link { color: inherit; text-decoration: none; }
+.align-right { text-align: right; }
+.book-cover[data-cover="kant"] { --cover: #2f4a5c; }
+.book-cover[data-cover="freud"] { --cover: #5b3a2e; }
