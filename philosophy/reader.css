@@ -1,0 +1,332 @@
+/* ===== ほらあな哲学書庫 ビューワー =====
+   縦書き(既定)/横書きを切り替えられる、ページめくり式の読書画面。
+   ページ分割は CSS 段組み(columns)で行い、reader.js がめくる。 */
+
+:root {
+    --paper: #fbf7ee;
+    --paper-edge: #efe6d2;
+    --ink: #2b2620;
+    --ink-soft: #6f665a;
+    --accent: #8a2f24;
+    --desk: #d9d2c3;
+    --bar: #f4efe4;
+    --line: #d8cfbd;
+    --fs: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper: #23201b;
+        --paper-edge: #1b1915;
+        --ink: #e6dfd2;
+        --ink-soft: #a39a8a;
+        --accent: #e09a86;
+        --desk: #121110;
+        --bar: #1a1815;
+        --line: #3a352d;
+    }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body.book-page {
+    background: var(--desk);
+    color: var(--ink);
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+/* --- 上のバー --- */
+.topbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bar);
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+}
+
+.topbar a {
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.bar-title {
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--ink-soft);
+}
+
+.bar-tools {
+    display: flex;
+    gap: 4px;
+}
+
+.topbar button,
+.pager button {
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.topbar button:hover,
+.pager button:hover {
+    background: var(--paper);
+}
+
+/* --- 本(紙面) --- */
+.book {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    margin: 16px auto;
+    width: min(calc(100vw - 32px), 760px);
+    background: var(--paper);
+    border-radius: 3px;
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, .15),
+        0 8px 24px rgba(0, 0, 0, .12),
+        inset 0 0 40px var(--paper-edge);
+    padding: 40px 36px;
+}
+
+body.vertical .book {
+    width: min(calc(100vw - 32px), 960px);
+}
+
+.pages {
+    width: 100%;
+    height: 100%;
+    font-size: var(--fs);
+    line-height: 1.9;
+    overflow: auto;                 /* JSが無いときは普通にスクロール */
+    hyphens: auto;
+    text-align: justify;
+    font-feature-settings: "palt" 0;
+}
+
+/* JSが動いたら段組みでページに分ける */
+.js .pages {
+    overflow: hidden;
+    column-fill: auto;
+}
+
+body.vertical .pages {
+    writing-mode: vertical-rl;
+    line-height: 1.85;
+}
+
+/* --- 紙面の中身 --- */
+.pages p {
+    margin: 0;
+    text-indent: 1em;
+}
+
+.pages h1,
+.pages h2 {
+    font-weight: 700;
+    letter-spacing: .05em;
+}
+
+.pages h2 {
+    font-size: 1.15em;
+    margin: 2em 0 1em;
+    break-after: avoid;
+}
+
+body.vertical .pages h2 {
+    margin: 0 2em 0 1em;
+}
+
+.cover {
+    break-after: column;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+body.vertical .cover {
+    height: auto;
+    width: 100%;
+}
+
+.cover h1 {
+    font-size: 1.9em;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.cover .author {
+    margin-top: 1.5em;
+    font-size: 1.05em;
+    color: var(--ink-soft);
+}
+
+.cover .range {
+    margin-top: .5em;
+    font-size: .85em;
+    color: var(--ink-soft);
+}
+
+.cover .shelf-mark {
+    margin-top: 3em;
+    font-size: .75em;
+    color: var(--ink-soft);
+    letter-spacing: .2em;
+}
+
+.num {
+    font-size: .75em;
+    color: var(--accent);
+    margin-inline-end: .4em;
+    text-indent: 0;
+}
+
+body.vertical .num {
+    text-combine-upright: digits 2;
+}
+
+.note {
+    font-size: .85em;
+    color: var(--ink-soft);
+    line-height: 1.8;
+    margin: 1em 0;
+    padding-inline-start: 1em;
+    border-inline-start: 2px solid var(--line);
+    break-inside: avoid-column;
+}
+
+body.vertical .note {
+    margin: 0 1em;
+}
+
+.pages .note p,
+.pages p.note {
+    text-indent: 0;
+}
+
+.pages .note p + p {
+    margin-top: .4em;
+}
+
+.verse p {
+    text-indent: 0;
+    padding-inline-start: 2em;
+}
+
+.pages a {
+    color: var(--accent);
+}
+
+.colophon {
+    break-before: column;
+    font-size: .85em;
+    color: var(--ink-soft);
+}
+
+/* --- 下のページ送り --- */
+.pager {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px 12px;
+    width: min(calc(100vw - 32px), 960px);
+    margin: 0 auto;
+    font-size: 13px;
+    color: var(--ink-soft);
+}
+
+.progress {
+    flex: 1;
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress div {
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    transition: width .2s;
+}
+
+body.vertical .progress {
+    transform: scaleX(-1);  /* 縦書きは右から左へ進む */
+}
+
+#count {
+    min-width: 5em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ページめくりの軽いアニメーション */
+.pages.turn {
+    animation: turn .25s ease-out;
+}
+
+@keyframes turn {
+    from { opacity: .35; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+    .book {
+        margin: 8px auto;
+        width: calc(100vw - 16px);
+        padding: 28px 20px;
+    }
+
+    body.vertical .book {
+        width: calc(100vw - 16px);
+    }
+
+    .pager {
+        width: 100%;
+        padding: 0 8px 8px;
+    }
+
+    .topbar {
+        padding: 6px 8px;
+    }
+
+    .bar-title {
+        display: none;
+    }
+
+    .bar-tools {
+        margin-left: auto;
+    }
+}
+
+@media print {
+    body.book-page { height: auto; overflow: visible; display: block; }
+    .topbar, .pager { display: none; }
+    .book { box-shadow: none; width: auto; margin: 0; }
+    .js .pages { overflow: visible; columns: auto !important; height: auto !important; }
+}
