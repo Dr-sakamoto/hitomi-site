@@ -1,0 +1,42 @@
+{
+  "site": {
+    "name": "ほらあな哲学書庫",
+    "url": "https://dr-sakamoto.github.io/horaana-Library/"
+  },
+  "pages": [
+    { "path": "", "lastmod": "2026-11-07" },
+    { "path": "terms.html", "lastmod": "2026-11-08" },
+    { "path": "privacy.html", "lastmod": "2026-11-08" },
+    { "path": "contact.html", "lastmod": "2026-11-08" }
+  ],
+  "works": [
+    {
+      "slug": "kant-aufklaerung",
+      "title": "啓蒙とは何か",
+      "author": "カント",
+      "authorDates": "1724–1804",
+      "year": 1784,
+      "language": "ドイツ語",
+      "range": "全訳",
+      "originalTitle": "Beantwortung der Frage: Was ist Aufklärung?",
+      "description": "カント「啓蒙とは何か」の全文を、ドイツ語原典から日本語に無料で翻訳。「あえて賢くあれ(サペーレ・アウデ)、自分の悟性を用いる勇気をもて」。",
+      "shelfNote": "「あえて賢くあれ、自分の悟性を用いる勇気をもて」。",
+      "coverColor": "#2f4a5c",
+      "updated": "2026-11-07"
+    },
+    {
+      "slug": "freud-difficulty",
+      "title": "精神分析のある困難",
+      "author": "フロイト",
+      "authorDates": "1856–1939",
+      "year": 1917,
+      "language": "ドイツ語",
+      "range": "全訳",
+      "originalTitle": "Eine Schwierigkeit der Psychoanalyse",
+      "description": "フロイト「精神分析のある困難」(1917)の全文を、ドイツ語原典から日本語に無料で翻訳。人類の自己愛を傷つけた三つの出来事と「自我は自分自身の家の主人ではない」。",
+      "shelfNote": "「自我は自分自身の家の主人ではない」。",
+      "coverColor": "#5b3a2e",
+      "updated": "2026-11-07"
+    }
+  ]
+}

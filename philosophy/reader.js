@@ -268,11 +268,6 @@
 
     function buildPanel() {
         var tools = document.querySelector('.bar-tools');
-        // 古いページにある文字サイズボタンは設定パネルにまとめる
-        ['smaller', 'larger'].forEach(function (id) {
-            var el = document.getElementById(id);
-            if (el) { el.remove(); }
-        });
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.id = 'settings-btn';
@@ -365,8 +360,6 @@
             layout(true);
             document.getElementById('settings').hidden = false;
         });
-
-        return { open: openPanel, panel: panel };
     }
 
     // ---------- この本について(解説・訳注・原典) ----------
@@ -396,7 +389,7 @@
 
     // ---------- 起動 ----------
     root.classList.add('js');
-    var settingsUI = buildPanel();
+    buildPanel();
     setupInfo();
 
     var savedRatio = parseFloat(load(posKey, '0')) || 0;
@@ -471,5 +464,4 @@
         document.fonts.ready.then(function () { layout(true); });
     }
 
-    void settingsUI;
 })();

@@ -2,7 +2,8 @@
    縦書き(既定)/横書きを切り替えられる、ページめくり式の読書画面。
    ページ分割は CSS 段組み(columns)で行い、reader.js がめくる。 */
 
-:root {
+:root,
+html[data-theme="paper"] {
     --paper: #fbf7ee;
     --paper-edge: #efe6d2;
     --ink: #2b2620;
@@ -27,12 +28,8 @@
     }
 }
 
-/* 背景の手動切り替え(設定パネル) */
-html[data-theme="paper"] {
-    --paper: #fbf7ee; --paper-edge: #efe6d2; --ink: #2b2620; --ink-soft: #6f665a;
-    --accent: #8a2f24; --desk: #d9d2c3; --bar: #f4efe4; --line: #d8cfbd;
-}
-
+/* 背景の手動切り替え(設定パネル)。「紙」は上の :root と同じ値を使う
+   (html[data-theme] のほうが詳細度が高いので、OS がダークでも紙になる) */
 html[data-theme="white"] {
     --paper: #ffffff; --paper-edge: #ffffff; --ink: #1a1a1a; --ink-soft: #666666;
     --accent: #8a2f24; --desk: #e9e9e9; --bar: #f7f7f7; --line: #dddddd;
@@ -45,7 +42,8 @@ html[data-theme="dark"] {
 
 :root {
     --lh: 1.85;
-    --font-body: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-body: var(--font-serif);
 }
 
 html.font-gothic {
@@ -63,7 +61,7 @@ html, body {
 body.book-page {
     background: var(--desk);
     color: var(--ink);
-    font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-family: var(--font-serif);
     display: flex;
     flex-direction: column;
     height: 100dvh;
@@ -226,17 +224,6 @@ body.vertical .cover {
     letter-spacing: .2em;
 }
 
-.num {
-    font-size: .75em;
-    color: var(--accent);
-    margin-inline-end: .4em;
-    text-indent: 0;
-}
-
-body.vertical .num {
-    text-combine-upright: digits 2;
-}
-
 .note {
     font-size: .85em;
     color: var(--ink-soft);
@@ -260,20 +247,10 @@ body.vertical .note {
     margin-top: .4em;
 }
 
-.verse p {
-    text-indent: 0;
-    padding-inline-start: 2em;
-}
-
 .pages a {
     color: var(--accent);
 }
 
-.colophon {
-    break-before: column;
-    font-size: .85em;
-    color: var(--ink-soft);
-}
 
 
 /* --- 読書設定パネル --- */

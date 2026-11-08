@@ -2,9 +2,10 @@
 <html lang="ja">
 <!--
   OGP画像(1200×630)の原版。公開ページではない。
-  ?title=作品名&author=著者&note=一行説明&color=%232f4a5c で作品用、引数なしで書庫全体用。
-  例:npx playwright screenshot --viewport-size=1200,630 --wait-for-timeout=1500 \
-        "file://$PWD/ogp/_card.html?title=…&author=…&note=…&color=%232f4a5c" ogp/<作品ファイル名>.png
+  作品用の画像は node _tools/build.mjs --ogp で _works/works.json から作る。
+  ?title=作品名&author=著者&note=一行説明&color=%232f4a5c で作品用、引数なしで書庫全体用(ogp/site.png)。
+  書庫全体用の例:npx playwright screenshot --viewport-size=1200,630 --wait-for-timeout=1500 \
+        "file://$PWD/ogp/_card.html" ogp/site.png
 -->
 <head>
 <meta charset="UTF-8">

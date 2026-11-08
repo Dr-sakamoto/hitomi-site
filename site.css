@@ -151,23 +151,6 @@ a { color: var(--accent); }
     color: var(--ink-soft);
 }
 
-/* --- 翻訳中 --- */
-.wip {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 8px 24px;
-    font-size: 15px;
-}
-
-.wip li {
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--line);
-    color: var(--ink-soft);
-}
-
 /* --- この書庫について --- */
 .about {
     background: var(--paper);
@@ -215,13 +198,15 @@ footer {
 }
 
 .button:hover, .button:focus-visible { opacity: .88; }
-.button[hidden] { display: none; }
-
 /* インラインの style 属性は CSP で止まるので、ここにまとめる */
 .home-link { color: inherit; text-decoration: none; }
 .align-right { text-align: right; }
-.book-cover[data-cover="kant"] { --cover: #2f4a5c; }
-.book-cover[data-cover="freud"] { --cover: #5b3a2e; }
+
+/* 表紙の色。_works/works.json の coverColor から作る */
+/* ここから自動生成(_tools/build.mjs) */
+.book-cover[data-cover="kant-aufklaerung"] { --cover: #2f4a5c; }
+.book-cover[data-cover="freud-difficulty"] { --cover: #5b3a2e; }
+/* ここまで自動生成 */
 
 /* --- ユーザー別の本棚 --- */
 .profile-bar { margin: 0 0 20px; font-size: 14px; }
