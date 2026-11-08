@@ -151,23 +151,6 @@ a { color: var(--accent); }
     color: var(--ink-soft);
 }
 
-/* --- 翻訳中 --- */
-.wip {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 8px 24px;
-    font-size: 15px;
-}
-
-.wip li {
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--line);
-    color: var(--ink-soft);
-}
-
 /* --- この書庫について --- */
 .about {
     background: var(--paper);
@@ -215,4 +198,59 @@ footer {
 }
 
 .button:hover, .button:focus-visible { opacity: .88; }
-.button[hidden] { display: none; }
+/* インラインの style 属性は CSP で止まるので、ここにまとめる */
+.home-link { color: inherit; text-decoration: none; }
+.align-right { text-align: right; }
+
+/* 表紙の色。_works/works.json の coverColor から作る */
+/* ここから自動生成(_tools/build.mjs) */
+.book-cover[data-cover="kant-aufklaerung"] { --cover: #2f4a5c; }
+.book-cover[data-cover="freud-difficulty"] { --cover: #5b3a2e; }
+/* ここまで自動生成 */
+
+/* --- ユーザー別の本棚 --- */
+.profile-bar { margin: 0 0 20px; font-size: 14px; }
+.profile-row, .filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.profile-bar select,
+.profile-bar button,
+.book-meta select,
+.book-meta button {
+    font: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+.profile-bar button[hidden] { display: none; }
+.filter-row button[aria-pressed="true"] { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+.profile-note { margin: 0; color: var(--ink-soft); font-size: 12px; }
+.shelf li[hidden] { display: none; }
+.shelf-empty { color: var(--ink-soft); text-align: center; margin: 16px 0 0; }
+
+.book-cover .progress-bar {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 5px;
+    background: rgba(0, 0, 0, .3);
+}
+.book-cover .progress-bar::after {
+    content: "";
+    display: block;
+    height: 100%;
+    width: var(--p, 0%);
+    background: #e8c46a;
+}
+.book-cover.is-fav::before {
+    content: "★";
+    position: absolute;
+    top: 6px; right: 8px;
+    color: #e8c46a;
+    font-size: 16px;
+}
+.book-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
+.book-meta .progress-text { flex: 1 1 100%; }
+.book-meta select { flex: 1; min-width: 0; padding: 2px 6px; }
+.book-meta .fav-btn { padding: 2px 8px; font-size: 16px; line-height: 1.2; }
+.book-meta .fav-btn[aria-pressed="true"] { color: #b8860b; }
