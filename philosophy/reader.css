@@ -7,7 +7,7 @@ html[data-theme="paper"] {
     --paper: #fbf7ee;
     --paper-edge: #efe6d2;
     --ink: #2b2620;
-    --ink-soft: #6f665a;
+    --ink-soft: #5f574c;
     --accent: #8a2f24;
     --desk: #d9d2c3;
     --bar: #f4efe4;
@@ -460,6 +460,94 @@ body.vertical .author-note {
     text-indent: 0;
 }
 
+/* --- 読み終わり --- */
+.the-end {
+    break-before: column;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 1em;
+    font-size: .95em;
+}
+
+/* 縦書きでも、案内とボタンは横書きで1ページに収める */
+body.vertical .the-end {
+    writing-mode: horizontal-tb;
+    width: 100%;
+    height: 100%;
+    padding: 0 1em;
+}
+
+.pages .the-end p {
+    text-indent: 0;
+    margin: 0;
+}
+
+.the-end .end-mark {
+    font-size: 1.4em;
+    font-weight: 700;
+    letter-spacing: .3em;
+}
+
+.the-end .end-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .6em;
+}
+
+.the-end .end-links a,
+.the-end .end-links button {
+    font: inherit;
+    font-size: .9em;
+    color: var(--ink);
+    background: var(--bar);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: .5em 1em;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.the-end .end-note {
+    font-size: .8em;
+    color: var(--ink-soft);
+}
+
+/* --- 目次(解説パネルの先頭) --- */
+.toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.toc button {
+    font: inherit;
+    width: 100%;
+    min-height: 40px;
+    text-align: left;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px dashed var(--line);
+    padding: 6px 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+}
+
+.toc button:hover { background: var(--paper); }
+
+.toc .toc-page {
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
 /* --- めくり方の案内 --- */
 .tap-hint {
     position: absolute;
@@ -535,12 +623,16 @@ body.immersive .pager {
     color: var(--ink-soft);
 }
 
+/* 進み具合のバー。押した位置へ移動できるよう、上下に余白をとって押しやすくする */
 .progress {
     flex: 1;
-    height: 3px;
+    height: 26px;
+    padding: 10px 0;
     background: var(--line);
-    border-radius: 2px;
+    background-clip: content-box;
+    border-radius: 3px;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .progress div {
@@ -608,6 +700,9 @@ body.vertical .progress {
     .book { box-shadow: none; width: auto; margin: 0; }
     .js .pages { overflow: visible; columns: auto !important; height: auto !important; }
 }
+
+/* 目次から移動したときにフォーカスを受けるだけなので、枠は出さない */
+.book:focus { outline: none; }
 
 /* インラインの style 属性は CSP で止まるので、ここにまとめる */
 .align-right { text-align: right; }

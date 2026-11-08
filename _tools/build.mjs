@@ -152,11 +152,13 @@ for (const w of works) {
     const shelf = works.map((w) => {
         const href = `philosophy/${w.slug}.html`;
         const t = escapeHtml(w.title);
+        // 長い題名は表紙で途中から折り返すと読みにくいので、字を小さくして1列に収める(site.css の .title.long)
+        const titleClass = [...w.title].length >= 8 ? 'title long' : 'title';
         return [
             `<li data-book="${href}">`,
             `    <a class="book-cover" href="${href}" data-cover="${w.slug}">`,
             `        <span class="badge">${escapeHtml(w.range)}</span>`,
-            `        <span class="title">${t}</span>`,
+            `        <span class="${titleClass}">${t}</span>`,
             `        <span class="author">${escapeHtml(w.author)}</span>`,
             '        <span class="progress-bar" aria-hidden="true"></span>',
             '    </a>',

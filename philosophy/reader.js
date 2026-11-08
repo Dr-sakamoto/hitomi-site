@@ -256,6 +256,14 @@
     function goLeft() { if (isVertical()) { next(); } else { prev(); } }
     function goRight() { if (isVertical()) { prev(); } else { next(); } }
 
+    // 紙面の中の要素が何ページ目(0から)にあるか
+    function pageOf(el) {
+        var pr = pages.getBoundingClientRect();
+        var r = el.getBoundingClientRect();
+        var pos = isVertical() ? (r.top - pr.top + pages.scrollTop) : (r.left - pr.left + pages.scrollLeft);
+        return Math.max(0, Math.min(total - 1, Math.floor((pos + 1) / (pageSize() + GAP))));
+    }
+
     // ---------- 設定パネル ----------
     function option(value, label, current) {
         return '<option value="' + value + '"' + (String(value) === String(current) ? ' selected' : '') + '>' + label + '</option>';
@@ -441,6 +449,41 @@
         if (!info || !infoBtn) { return; }
         info.setAttribute('role', 'dialog');
         info.tabIndex = -1;
+
+        // 目次:本文に見出しがある作品だけ、解説パネルの先頭に置く
+        var heads = pages.querySelectorAll('h2');
+        var tocItems = [];
+        if (heads.length) {
+            var toc = document.createElement('section');
+            toc.className = 'toc';
+            toc.innerHTML = '<h2>目次</h2><ol></ol>';
+            var ol = toc.querySelector('ol');
+            var targets = [[pages.querySelector('.cover'), '表紙']];
+            Array.prototype.forEach.call(heads, function (h) { targets.push([h, h.textContent]); });
+            targets.push([endEl, '読み終わり']);
+            targets.forEach(function (t) {
+                if (!t[0]) { return; }
+                var li = document.createElement('li');
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.innerHTML = '<span></span><span class="toc-page"></span>';
+                b.firstChild.textContent = t[1];
+                b.addEventListener('click', function () {
+                    setPanel('info', false, false);
+                    go(pageOf(t[0]), true);
+                    book.focus();
+                });
+                li.appendChild(b);
+                ol.appendChild(li);
+                tocItems.push([t[0], b.lastChild]);
+            });
+            var head = info.querySelector('.info-head');
+            head.parentNode.insertBefore(toc, head.nextSibling);
+            infoBtn.textContent = '目次・解説';
+        }
+        function refreshToc() {
+            tocItems.forEach(function (t) { t[1].textContent = (pageOf(t[0]) + 1) + 'ページ'; });
+        }
         var close = document.getElementById('info-close');
         if (close) {
             close.setAttribute('data-close', '');
@@ -450,7 +493,10 @@
             el: info,
             btn: infoBtn,
             isOpen: function () { return info.classList.contains('open'); },
-            set: function (open) { info.classList.toggle('open', open); }
+            set: function (open) {
+                info.classList.toggle('open', open);
+                if (open) { refreshToc(); }
+            }
         };
         infoBtn.addEventListener('click', function () { setPanel('info', !panels.info.isOpen(), true); });
     }
@@ -492,8 +538,26 @@
         layout(true);
     }
 
+    // ---------- 読み終わり(最後のページ) ----------
+    var endEl = document.createElement('section');
+    endEl.className = 'the-end';
+    endEl.innerHTML =
+        '<p class="end-mark">(終)</p>' +
+        '<p>最後まで読んでいただき、ありがとうございました。</p>' +
+        '<p class="end-links">' +
+            '<a href="../">書棚へ戻る</a>' +
+            (document.getElementById('book-info') ? '<button type="button" id="end-info">解説・訳注を読む</button>' : '') +
+            '<button type="button" id="end-top">はじめから読む</button>' +
+        '</p>' +
+        '<p class="end-note">誤訳のご指摘やご感想は<a href="../contact.html">お問い合わせ</a>からどうぞ。</p>';
+    pages.appendChild(endEl);
+    var endInfo = document.getElementById('end-info');
+    if (endInfo) { endInfo.addEventListener('click', function () { setPanel('info', true); }); }
+    document.getElementById('end-top').addEventListener('click', function () { go(0, true); });
+
     // ---------- 起動 ----------
     root.classList.add('js');
+    book.tabIndex = -1;
     buildPanel();
     setupInfo();
 
@@ -521,8 +585,8 @@
     // 紙面の左右をタップしてめくる。中央はバーの表示・非表示。
     // パネルが開いているときは、まずパネルを閉じるだけにする(裏でページを動かさない)。
     book.addEventListener('click', function (e) {
-        if (closePanels(true)) { return; }
         if (e.target.closest('a, button')) { return; }
+        if (closePanels(true)) { return; }
         var rect = book.getBoundingClientRect();
         var x = (e.clientX - rect.left) / rect.width;
         if (x < 0.4) { goLeft(); }
@@ -550,6 +614,47 @@
         else if (e.key === 'Home') { go(0, true); }
         else if (e.key === 'End') { go(total - 1, true); }
     });
+
+    // 進み具合のバーを押すと、その位置へ移動する(縦書きは右端が先頭)
+    var progressEl = document.querySelector('.progress');
+    if (progressEl) {
+        progressEl.setAttribute('aria-hidden', 'true');
+        progressEl.title = '押した位置へ移動';
+        progressEl.addEventListener('click', function (e) {
+            var r = progressEl.getBoundingClientRect();
+            var x = (e.clientX - r.left) / r.width;
+            if (isVertical()) { x = 1 - x; }
+            go(Math.round(Math.max(0, Math.min(1, x)) * (total - 1)), true);
+        });
+    }
+
+    // マウスホイール・トラックパッドでめくる。
+    // 慣性で続くイベントで何ページも進まないよう、止まるまで次をめくらない。
+    var wheelLock = 0;
+    var wheelAcc = 0;
+    book.addEventListener('wheel', function (e) {
+        if (e.ctrlKey) { return; }   // ピンチでの拡大は邪魔しない
+        e.preventDefault();
+        if (openName()) { return; }
+        var now = Date.now();
+        if (now < wheelLock) {
+            wheelLock = Math.max(wheelLock, now + 150);
+            return;
+        }
+        var horiz = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+        var d = horiz ? e.deltaX : e.deltaY;
+        if (e.deltaMode === 1) { d *= 16; }   // 行単位のホイール
+        wheelAcc += d;
+        if (Math.abs(wheelAcc) < 30) { return; }
+        hideHint();
+        if (horiz) {
+            if (wheelAcc > 0) { goRight(); } else { goLeft(); }
+        } else {
+            if (wheelAcc > 0) { next(); } else { prev(); }
+        }
+        wheelAcc = 0;
+        wheelLock = now + 350;
+    }, { passive: false });
 
     var touchX = null;
     var touchY = null;
