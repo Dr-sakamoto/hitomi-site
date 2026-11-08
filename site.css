@@ -4,7 +4,7 @@
     --paper: #fbf7ee;
     --paper-edge: #efe6d2;
     --ink: #2b2620;
-    --ink-soft: #6f665a;
+    --ink-soft: #5f574c;
     --accent: #8a2f24;
     --desk: #e8e1d2;
     --line: #d8cfbd;
@@ -134,6 +134,13 @@ a { color: var(--accent); }
     background: rgba(0, 0, 0, .08);
 }
 
+/* 長い題名は字を小さくして1列に収める(途中で折り返すと読みにくい) */
+.book-cover .title.long {
+    font-size: 15px;
+    letter-spacing: .04em;
+    max-height: none;
+}
+
 .book-cover .author {
     font-size: 13px;
     letter-spacing: .1em;
@@ -196,6 +203,7 @@ footer {
     .masthead { padding: 48px 16px 32px; }
     .shelf { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; padding: 16px 12px 0; }
     .book-cover .title { font-size: 17px; }
+    .book-cover .title.long { font-size: 13px; letter-spacing: .02em; }
     .about { padding: 20px; }
 }
 
