@@ -1,0 +1,200 @@
+/* ===== ほらあな哲学書庫 トップページ ===== */
+
+:root {
+    --paper: #fbf7ee;
+    --paper-edge: #efe6d2;
+    --ink: #2b2620;
+    --ink-soft: #6f665a;
+    --accent: #8a2f24;
+    --desk: #e8e1d2;
+    --line: #d8cfbd;
+    --shelf: #b89a72;
+    --shelf-dark: #8f7350;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper: #23201b;
+        --paper-edge: #1b1915;
+        --ink: #e6dfd2;
+        --ink-soft: #a39a8a;
+        --accent: #e09a86;
+        --desk: #161412;
+        --line: #3a352d;
+        --shelf: #4a3c2c;
+        --shelf-dark: #31281e;
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--desk);
+    color: var(--ink);
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    line-height: 1.9;
+}
+
+a { color: var(--accent); }
+
+.wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* --- 見出し --- */
+.masthead {
+    text-align: center;
+    padding: 72px 16px 48px;
+}
+
+.masthead h1 {
+    font-size: clamp(32px, 7vw, 52px);
+    letter-spacing: .12em;
+    margin: 0;
+    font-weight: 700;
+}
+
+.masthead .tagline {
+    margin: 16px auto 0;
+    max-width: 34em;
+    color: var(--ink-soft);
+    font-size: 15px;
+}
+
+/* --- 書棚 --- */
+.section-title {
+    font-size: 18px;
+    letter-spacing: .2em;
+    margin: 48px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+
+.shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 32px 24px;
+    padding: 24px 16px 0;
+    margin: 0;
+    list-style: none;
+    background:
+        linear-gradient(to bottom, transparent calc(100% - 14px), var(--shelf) calc(100% - 14px), var(--shelf-dark) 100%);
+    border-radius: 2px;
+}
+
+.shelf li {
+    padding-bottom: 14px;
+    min-width: 0;
+}
+
+.book-cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 2 / 3;
+    padding: 18px 14px 14px;
+    border-radius: 2px 6px 6px 2px;
+    color: #f6efe2;
+    text-decoration: none;
+    background: var(--cover, #5b3a2e);
+    box-shadow:
+        inset 6px 0 0 rgba(0, 0, 0, .18),
+        inset 7px 0 0 rgba(255, 255, 255, .08),
+        0 2px 4px rgba(0, 0, 0, .25),
+        0 10px 20px rgba(0, 0, 0, .18);
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.book-cover:hover,
+.book-cover:focus-visible {
+    transform: translateY(-6px);
+    box-shadow:
+        inset 6px 0 0 rgba(0, 0, 0, .18),
+        0 4px 8px rgba(0, 0, 0, .25),
+        0 18px 28px rgba(0, 0, 0, .22);
+}
+
+.book-cover .title {
+    writing-mode: vertical-rl;
+    align-self: flex-end;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    line-height: 1.4;
+    max-height: 11em;
+    max-width: 100%;
+    overflow: hidden;
+    border: 1px solid rgba(246, 239, 226, .5);
+    padding: 10px 6px;
+    background: rgba(0, 0, 0, .08);
+}
+
+.book-cover .author {
+    font-size: 13px;
+    letter-spacing: .1em;
+}
+
+.book-cover .badge {
+    font-size: 11px;
+    opacity: .85;
+}
+
+.book-info {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+}
+
+/* --- 翻訳中 --- */
+.wip {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px 24px;
+    font-size: 15px;
+}
+
+.wip li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+    color: var(--ink-soft);
+}
+
+/* --- この書庫について --- */
+.about {
+    background: var(--paper);
+    border-radius: 3px;
+    padding: 28px 32px;
+    box-shadow: inset 0 0 40px var(--paper-edge), 0 4px 16px rgba(0, 0, 0, .08);
+    font-size: 15px;
+}
+
+.about p {
+    margin: 0 0 1em;
+}
+
+.about p:last-child {
+    margin-bottom: 0;
+}
+
+footer {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 56px 16px 40px;
+}
+
+@media (max-width: 600px) {
+    .masthead { padding: 48px 16px 32px; }
+    .shelf { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; padding: 16px 12px 0; }
+    .book-cover .title { font-size: 17px; }
+    .about { padding: 20px; }
+}

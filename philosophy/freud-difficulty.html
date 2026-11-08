@@ -43,7 +43,7 @@
   "isPartOf": {
     "@type": "Collection",
     "name": "ほらあな哲学書庫",
-    "url": "https://dr-sakamoto.github.io/hitomi-site/book.html"
+    "url": "https://dr-sakamoto.github.io/hitomi-site/"
   }
 }
     </script>
@@ -52,12 +52,11 @@
 <body class="book-page">
 
 <header class="topbar">
-    <a href="../book.html">← 書棚</a>
+    <a href="../">← 書棚</a>
     <div class="bar-title">精神分析のある困難 / フロイト</div>
     <div class="bar-tools">
+        <button id="info-btn" type="button" aria-controls="book-info" aria-expanded="false">解説</button>
         <button id="mode" type="button">横書き</button>
-        <button id="smaller" type="button" aria-label="文字を小さく">A−</button>
-        <button id="larger" type="button" aria-label="文字を大きく">A＋</button>
     </div>
 </header>
 
@@ -69,10 +68,6 @@
         <div class="author">フロイト(1856–1939)</div>
         <div class="range">全訳 ／ ドイツ語原典より</div>
         <div class="shelf-mark">ほらあな哲学書庫</div>
-    </div>
-
-    <div class="note">
-        <p>ジークムント・フロイト(1856–1939)が1917年に発表した短い論文。精神分析がなぜ人々に嫌われるのかを、「人類の自己愛は、科学によってこれまで三度深く傷つけられてきた」という有名な話で説明する。コペルニクス、ダーウィン、そして精神分析。「自我は自分自身の家の主人ではない」という言葉はここから来ている。全文を訳した。</p>
     </div>
 
     <p>はじめにお断りしておくと、わたしがここで言う困難とは、知的な困難、つまり精神分析を受けとる人(聞き手や読み手)にとって理解しにくくしているもののことではない。感情的な困難、つまり精神分析が受けとる人の気持ちを遠ざけ、そのためにその人が精神分析に関心を向けたり、それを信じたりする気になりにくくしているもののことである。お気づきのとおり、この二種類の困難は結局のところ同じことに行きつく。ある事柄に十分な共感を寄せられない人は、それを理解することも、そう簡単にはできないものだ。</p>
@@ -127,24 +122,36 @@
 
     <p>無意識の心の過程を認めることが、学問と人生にとってどれほど重大な結果をもたらす一歩を意味するかを、はっきりと理解している人はごくわずかであろう。だが急いでつけ加えておくと、この一歩を最初に踏みだしたのは精神分析ではない。先駆者として名高い哲学者たちを挙げることができる。とりわけ偉大な思想家ショーペンハウアーである。彼の言う無意識の「意志」は、精神分析の言う心の欲動と同じものと見なすことができる。ついでに言えば、この同じ思想家は、忘れがたい力強い言葉で、人々がいまなお過小評価している自分の性的な努力の意味を、人間に思い起こさせたのでもあった。精神分析がまさっている点はただひとつ、ナルシシズムにとってこれほどつらい二つの命題――性的なものの心的な意味と、心の営みの無意識性という命題――を、抽象的に主張するのではなく、誰にとっても個人的にかかわりがあり、これらの問題に対して態度を決めることを迫るような素材にもとづいて証明してみせることにある。しかしまさにそのために、精神分析は、哲学者の偉大な名前の前ではまだ遠慮がちに避けられている反感と抵抗とを、自分の身に引き寄せてしまうのである。</p>
 
-    <div class="note">
-        <p><b>訳注</b></p>
-        <p>「侮辱」…ドイツ語 Kränkung(クレンクング)。「傷つけること」「感情を害すること」。日本では「三つの屈辱」「三つの打撃」とも紹介される。</p>
+    </article>
+</main>
+
+<aside class="book-info" id="book-info" aria-label="この本について">
+    <div class="info-head"><b>この本について</b><button type="button" id="info-close" aria-label="閉じる">×</button></div>
+        <section>
+            <h2>作品について</h2>
+            <p>ジークムント・フロイト(1856–1939)が1917年に発表した短い論文。精神分析がなぜ人々に嫌われるのかを、「人類の自己愛は、科学によってこれまで三度深く傷つけられてきた」という有名な話で説明する。コペルニクス、ダーウィン、そして精神分析。「自我は自分自身の家の主人ではない」という言葉はここから来ている。全文を訳した。</p>
+        </section>
+        <section>
+            <h2>訳注</h2>
+            <p>「侮辱」…ドイツ語 Kränkung(クレンクング)。「傷つけること」「感情を害すること」。日本では「三つの屈辱」「三つの打撃」とも紹介される。</p>
         <p>「欲動」…Trieb(トリープ)。本能(Instinkt)とは区別される、心を駆り立てる力。</p>
         <p>「備給」…Besetzung(ベゼッツング)。心のエネルギーを何かに注ぎこむこと。精神分析の専門用語。</p>
         <p>「審級」…Instanz(インスタンツ)。心のなかの、役割をもった部署や機関のようなもの。</p>
         <p>「半世紀あまり前」…ダーウィン『種の起源』は1859年。この論文の約60年前。</p>
         <p>この論文は最初、ハンガリーの文芸誌『ニュガト』に掲載され、同じ1917年に精神分析の雑誌『イマーゴ』にドイツ語で発表された。</p>
-    </div>
-
-    <div class="note colophon">
-        <p><b>原典・参考</b></p>
-        <p>ドイツ語原文:<a href="https://www.gutenberg.org/ebooks/29097">Project Gutenberg #29097 — Eine Schwierigkeit der Psychoanalyse</a></p>
+        </section>
+        <section>
+            <h2>原典・参考</h2>
+            <p>ドイツ語原文:<a href="https://www.gutenberg.org/ebooks/29097">Project Gutenberg #29097 — Eine Schwierigkeit der Psychoanalyse</a></p>
         <p>この訳文はAI(Claude)がドイツ語原典をもとに訳したものです。誤りがありうることをご了承ください。</p>
-    </div>
+        </section>
+        <section>
+            <h2>この訳について</h2>
+            <p>この訳文は、パブリックドメインの原典をもとに AI(Claude)が日本語に訳し、ほらあな哲学書庫が手を入れて公開しているものです。誤訳や解釈の偏りがありうるので、引用や研究に使うときは原典や専門家の訳で確かめてください。</p>
+            <p>引用・転載については<a href="../terms.html">利用条件</a>をご覧ください。</p>
+        </section>
+</aside>
 
-    </article>
-</main>
 
 <footer class="pager">
     <button id="left" type="button" aria-label="左のページへ">‹</button>

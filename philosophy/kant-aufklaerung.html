@@ -43,7 +43,7 @@
   "isPartOf": {
     "@type": "Collection",
     "name": "ほらあな哲学書庫",
-    "url": "https://dr-sakamoto.github.io/hitomi-site/book.html"
+    "url": "https://dr-sakamoto.github.io/hitomi-site/"
   }
 }
     </script>
@@ -52,12 +52,11 @@
 <body class="book-page">
 
 <header class="topbar">
-    <a href="../book.html">← 書棚</a>
+    <a href="../">← 書棚</a>
     <div class="bar-title">啓蒙とは何か / カント</div>
     <div class="bar-tools">
+        <button id="info-btn" type="button" aria-controls="book-info" aria-expanded="false">解説</button>
         <button id="mode" type="button">横書き</button>
-        <button id="smaller" type="button" aria-label="文字を小さく">A−</button>
-        <button id="larger" type="button" aria-label="文字を大きく">A＋</button>
     </div>
 </header>
 
@@ -69,10 +68,6 @@
         <div class="author">カント(1724–1804)</div>
         <div class="range">全訳 ／ ドイツ語原典より</div>
         <div class="shelf-mark">ほらあな哲学書庫</div>
-    </div>
-
-    <div class="note">
-        <p>イマヌエル・カント(1724–1804)は『純粋理性批判』で知られる、近代哲学の中心人物。この短い論文は1784年、ベルリンの雑誌『ベルリン月報』に発表された。「啓蒙とは何か」という当時の論争に答えたもので、「あえて賢くあれ(サペーレ・アウデ)」という標語とともに、近代の「自分の頭で考える」という理念を最もはっきり示した文章として読み継がれている。全文を訳した。</p>
     </div>
 
     <p><b>啓蒙とは、人間が自分で招いた未成年状態から抜け出ることである。</b>未成年状態とは、他人の指導なしには自分の悟性を用いることができない状態である。この未成年状態が<b>自分で招いた</b>ものであるのは、その原因が悟性の欠如にあるのではなく、他人の指導なしに自分の悟性を用いる決意と勇気の欠如にある場合である。<i>サペーレ・アウデ!</i> <b>自分自身の</b>悟性を用いる勇気をもて! ――これこそが啓蒙の標語である。</p>
@@ -105,14 +100,23 @@
 
     <p style="text-align:right">プロイセンのケーニヒスベルクにて、1784年9月30日<br>I. カント</p>
 
-    <div class="note">
+    <div class="author-note">
         <p><b>原注</b>(カント自身による)</p>
         <p>今日9月30日、ビュッシングの『週報』9月13日号で、今月の『ベルリン月報』の予告を読んだ。そこには同じ問いに対するメンデルスゾーン氏の答えが挙げられている。わたしはまだそれを手にしていない。もし手にしていたなら、この論文は出さずにおいたことだろう。いまやこの論文は、偶然がどこまで考えの一致をもたらしうるかを試すものとして、ここにあるだけである。</p>
     </div>
 
-    <div class="note">
-        <p><b>訳注</b></p>
-        <p>「未成年状態」…Unmündigkeit(ウンミュンディヒカイト)。法律上、後見人なしに自分で決められない状態。「未熟」「後見状態」とも訳される。</p>
+    </article>
+</main>
+
+<aside class="book-info" id="book-info" aria-label="この本について">
+    <div class="info-head"><b>この本について</b><button type="button" id="info-close" aria-label="閉じる">×</button></div>
+        <section>
+            <h2>作品について</h2>
+            <p>イマヌエル・カント(1724–1804)は『純粋理性批判』で知られる、近代哲学の中心人物。この短い論文は1784年、ベルリンの雑誌『ベルリン月報』に発表された。「啓蒙とは何か」という当時の論争に答えたもので、「あえて賢くあれ(サペーレ・アウデ)」という標語とともに、近代の「自分の頭で考える」という理念を最もはっきり示した文章として読み継がれている。全文を訳した。</p>
+        </section>
+        <section>
+            <h2>訳注</h2>
+            <p>「未成年状態」…Unmündigkeit(ウンミュンディヒカイト)。法律上、後見人なしに自分で決められない状態。「未熟」「後見状態」とも訳される。</p>
         <p>「悟性」…Verstand(フェアシュタント)。ものごとを理解し判断する知性の力。ここでは「自分の頭」とほぼ同じ意味。</p>
         <p>「サペーレ・アウデ」…ローマの詩人ホラティウスの言葉で、もとは「あえて賢くあれ」。カントはこれを「自分の悟性を用いる勇気をもて」と言い換えた。</p>
         <p>「女性全体もそこに含まれる」…原文は「美しい性全体」。18世紀の偏見を含んだ表現だが、原文どおり訳した。</p>
@@ -120,16 +124,19 @@
         <p>「公的な使用・私的な使用」…ふつうの感覚とは逆で、職務の中での発言が「私的」、学者として世間全体に向けて書くことが「公的」とされている点が、この論文のいちばんのポイント。</p>
         <p>「クラシス」…オランダ改革派教会の地区会議。</p>
         <p>「皇帝も文法家の上には立たない」…皇帝でも学問上の正しさを決める権限はない、という意味のラテン語の格言。</p>
-    </div>
-
-    <div class="note colophon">
-        <p><b>原典・参考</b></p>
-        <p>ドイツ語原文:<a href="https://www.gutenberg.org/ebooks/30821">Project Gutenberg #30821 — Beantwortung der Frage: Was ist Aufklärung?</a></p>
+        </section>
+        <section>
+            <h2>原典・参考</h2>
+            <p>ドイツ語原文:<a href="https://www.gutenberg.org/ebooks/30821">Project Gutenberg #30821 — Beantwortung der Frage: Was ist Aufklärung?</a></p>
         <p>この訳文はAI(Claude)がドイツ語原典をもとに訳したものです。誤りがありうることをご了承ください。</p>
-    </div>
+        </section>
+        <section>
+            <h2>この訳について</h2>
+            <p>この訳文は、パブリックドメインの原典をもとに AI(Claude)が日本語に訳し、ほらあな哲学書庫が手を入れて公開しているものです。誤訳や解釈の偏りがありうるので、引用や研究に使うときは原典や専門家の訳で確かめてください。</p>
+            <p>引用・転載については<a href="../terms.html">利用条件</a>をご覧ください。</p>
+        </section>
+</aside>
 
-    </article>
-</main>
 
 <footer class="pager">
     <button id="left" type="button" aria-label="左のページへ">‹</button>

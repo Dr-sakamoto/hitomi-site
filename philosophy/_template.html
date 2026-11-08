@@ -26,12 +26,11 @@
 <body class="book-page">
 
 <header class="topbar">
-    <a href="../book.html">← 書棚</a>
+    <a href="../">← 書棚</a>
     <div class="bar-title">{{WORK}} / {{AUTHOR}}</div>
     <div class="bar-tools">
+        <button id="info-btn" type="button" aria-controls="book-info" aria-expanded="false">解説</button>
         <button id="mode" type="button">横書き</button>
-        <button id="smaller" type="button" aria-label="文字を小さく">A−</button>
-        <button id="larger" type="button" aria-label="文字を大きく">A＋</button>
     </div>
 </header>
 
@@ -49,6 +48,16 @@
 
     </article>
 </main>
+
+<aside class="book-info" id="book-info" aria-label="この本について">
+    <div class="info-head"><b>この本について</b><button type="button" id="info-close" aria-label="閉じる">×</button></div>
+{{INFO}}
+        <section>
+            <h2>この訳について</h2>
+            <p>この訳文は、パブリックドメインの原典をもとに AI(Claude)が日本語に訳し、ほらあな哲学書庫が手を入れて公開しているものです。誤訳や解釈の偏りがありうるので、引用や研究に使うときは原典や専門家の訳で確かめてください。</p>
+            <p>引用・転載については<a href="../terms.html">利用条件</a>をご覧ください。</p>
+        </section>
+</aside>
 
 <footer class="pager">
     <button id="left" type="button" aria-label="左のページへ">‹</button>
