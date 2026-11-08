@@ -517,3 +517,14 @@ body.vertical .progress {
 
 /* インラインの style 属性は CSP で止まるので、ここにまとめる */
 .align-right { text-align: right; }
+
+/* --- ルビ --- */
+.pages ruby { ruby-position: over; }
+.pages rt {
+    font-size: .5em;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+.pages rp { display: none; }
+.ruby-none .pages rt { display: none; }

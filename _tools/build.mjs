@@ -148,16 +148,32 @@ for (const w of works) {
 // トップページ:書棚と JSON-LD
 {
     let html = read('index.html');
-    const shelf = works.map((w) => [
-        '<li>',
-        `    <a class="book-cover" href="philosophy/${w.slug}.html" data-cover="${w.slug}">`,
-        `        <span class="badge">${escapeHtml(w.range)}</span>`,
-        `        <span class="title">${escapeHtml(w.title)}</span>`,
-        `        <span class="author">${escapeHtml(w.author)}</span>`,
-        '    </a>',
-        `    <div class="book-info">${w.year}年/${escapeHtml(w.language)}原典より。${escapeHtml(w.shelfNote)}</div>`,
-        '</li>'
-    ].join('\n')).join('\n');
+    // 読書状態・お気に入り・進捗の欄は shelf.js が使う
+    const shelf = works.map((w) => {
+        const href = `philosophy/${w.slug}.html`;
+        const t = escapeHtml(w.title);
+        return [
+            `<li data-book="${href}">`,
+            `    <a class="book-cover" href="${href}" data-cover="${w.slug}">`,
+            `        <span class="badge">${escapeHtml(w.range)}</span>`,
+            `        <span class="title">${t}</span>`,
+            `        <span class="author">${escapeHtml(w.author)}</span>`,
+            '        <span class="progress-bar" aria-hidden="true"></span>',
+            '    </a>',
+            `    <div class="book-info">${w.year}年/${escapeHtml(w.language)}原典より。${escapeHtml(w.shelfNote)}</div>`,
+            '    <div class="book-meta">',
+            '        <span class="progress-text">未読</span>',
+            `        <select class="status-select" aria-label="「${t}」の読書状態">`,
+            '            <option value="">未設定</option>',
+            '            <option value="want">読みたい</option>',
+            '            <option value="reading">読書中</option>',
+            '            <option value="done">読了</option>',
+            '        </select>',
+            `        <button type="button" class="fav-btn" aria-pressed="false" aria-label="「${t}」をお気に入りにする">☆</button>`,
+            '    </div>',
+            '</li>'
+        ].join('\n');
+    }).join('\n');
     html = replaceBetweenMarks('index.html', html, shelf, 'html');
 
     const m = html.match(/(<script type="application\/ld\+json">\n)([\s\S]*?)(\n\s*<\/script>)/);
