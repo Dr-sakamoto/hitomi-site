@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- ほらあな哲学書庫のマーク:書庫の入口のアーチ。黒地に生成り -->
+  <rect width="64" height="64" rx="12" fill="#000"/>
+  <g fill="none" stroke="#f3ede1" stroke-width="5" stroke-linecap="square">
+    <path d="M14 54V30a18 18 0 0 1 36 0v24"/>
+    <path d="M23 54V31a9 9 0 0 1 18 0v23"/>
+    <path d="M9 54h46"/>
+  </g>
+</svg>

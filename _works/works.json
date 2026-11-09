@@ -4,10 +4,22 @@
     "url": "https://dr-sakamoto.github.io/horaana-Library/"
   },
   "pages": [
-    { "path": "", "lastmod": "2026-11-07" },
-    { "path": "terms.html", "lastmod": "2026-11-08" },
-    { "path": "privacy.html", "lastmod": "2026-11-08" },
-    { "path": "contact.html", "lastmod": "2026-11-08" }
+    {
+      "path": "",
+      "lastmod": "2026-11-07"
+    },
+    {
+      "path": "terms.html",
+      "lastmod": "2026-11-08"
+    },
+    {
+      "path": "privacy.html",
+      "lastmod": "2026-11-08"
+    },
+    {
+      "path": "contact.html",
+      "lastmod": "2026-11-08"
+    }
   ],
   "works": [
     {
@@ -21,8 +33,8 @@
       "originalTitle": "Beantwortung der Frage: Was ist Aufklärung?",
       "description": "カント「啓蒙とは何か」の全文を、ドイツ語原典から日本語に無料で翻訳。「あえて賢くあれ(サペーレ・アウデ)、自分の悟性を用いる勇気をもて」。",
       "shelfNote": "「あえて賢くあれ、自分の悟性を用いる勇気をもて」。",
-      "coverColor": "#2f4a5c",
-      "updated": "2026-11-07"
+      "updated": "2026-11-07",
+      "genre": "政治・社会"
     },
     {
       "slug": "freud-difficulty",
@@ -35,8 +47,15 @@
       "originalTitle": "Eine Schwierigkeit der Psychoanalyse",
       "description": "フロイト「精神分析のある困難」(1917)の全文を、ドイツ語原典から日本語に無料で翻訳。人類の自己愛を傷つけた三つの出来事と「自我は自分自身の家の主人ではない」。",
       "shelfNote": "「自我は自分自身の家の主人ではない」。",
-      "coverColor": "#5b3a2e",
-      "updated": "2026-11-07"
+      "updated": "2026-11-07",
+      "genre": "心と精神分析"
     }
-  ]
+  ],
+  "genres": {
+    "哲学": "#5098f4",
+    "倫理・生き方": "#2cbd84",
+    "政治・社会": "#fa6741",
+    "宗教・実存": "#ae80f0",
+    "心と精神分析": "#f8a626"
+  }
 }
