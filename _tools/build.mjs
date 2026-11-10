@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
+import crypto from 'node:crypto';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = new Set(process.argv.slice(2));
@@ -114,6 +115,11 @@ const fullTitle = (w) => `${w.title}(${w.range})`;
 const outputs = new Map(); // パス → 中身
 
 // 作品ページ
+// ビューワーの JS・CSS を書きかえたら URL も変わるようにする(?v=…)。
+// ファイル名が同じだと、ブラウザが古いファイルを使い続けることがあるため。
+const assetVersion = crypto.createHash('sha256')
+    .update(read('philosophy/reader.js')).update(read('philosophy/reader.css'))
+    .digest('hex').slice(0, 10);
 const pageTemplate = read('_works/page.html');
 for (const w of works) {
     const jsonld = {
@@ -130,6 +136,7 @@ for (const w of works) {
         isPartOf: { '@type': 'Collection', name: SITE.name, url: SITE.url }
     };
     const html = fill(pageTemplate, {
+        ASSET_VER: assetVersion,
         WORK: escapeHtml(w.title),
         AUTHOR: escapeHtml(w.author),
         RANGE: escapeHtml(w.range),
