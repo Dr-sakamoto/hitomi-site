@@ -446,6 +446,17 @@ body.vertical .note {
     color: var(--accent);
 }
 
+/* 紙の本で読む(広告) */
+.book-info .pr-note {
+    font-size: .85em;
+    opacity: .75;
+}
+
+.book-info .shop ul {
+    margin: 0 0 .6em;
+    padding-left: 1.2em;
+}
+
 /* 著者自身の注(作品の一部なので紙面に残す) */
 .author-note {
     font-size: .85em;
