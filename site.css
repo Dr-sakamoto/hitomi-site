@@ -122,6 +122,13 @@ a:hover, a:focus-visible { color: var(--accent); }
     color: #fff;
 }
 
+/* 長い題名は字を小さくして1列に収める(途中で折り返すと読みにくい) */
+.book-cover .title.long {
+    font-size: 15px;
+    letter-spacing: .04em;
+    max-height: none;
+}
+
 .book-cover .author {
     font-size: 14px;
     font-weight: 700;
@@ -173,6 +180,7 @@ footer {
     .masthead { padding: 40px 16px 28px; }
     .shelf { grid-template-columns: repeat(2, 1fr); gap: 28px 14px; }
     .book-cover .title { font-size: 16px; }
+    .book-cover .title.long { font-size: 13px; letter-spacing: .02em; }
     .about { padding: 18px 20px; }
 }
 

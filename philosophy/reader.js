@@ -256,6 +256,14 @@
     function goLeft() { if (isVertical()) { next(); } else { prev(); } }
     function goRight() { if (isVertical()) { prev(); } else { next(); } }
 
+    // 紙面の中の要素が何ページ目(0から)にあるか
+    function pageOf(el) {
+        var pr = pages.getBoundingClientRect();
+        var r = el.getBoundingClientRect();
+        var pos = isVertical() ? (r.top - pr.top + pages.scrollTop) : (r.left - pr.left + pages.scrollLeft);
+        return Math.max(0, Math.min(total - 1, Math.floor((pos + 1) / (pageSize() + GAP))));
+    }
+
     // ---------- 設定パネル ----------
     function option(value, label, current) {
         return '<option value="' + value + '"' + (String(value) === String(current) ? ' selected' : '') + '>' + label + '</option>';
@@ -266,6 +274,67 @@
             (String(value) === String(current) ? ' checked' : '') + '> ' + label + '</label>';
     }
 
+    // ---------- パネル(設定・解説)の開閉 ----------
+    // 開いたらパネルの中へフォーカスを移し、閉じたら開いたボタンへ戻す。
+    // 開いているあいだは Tab でパネルの外へ出ない。
+    var panels = {};   // name -> { el, btn, isOpen(), set(open) }
+
+    function openName() {
+        for (var k in panels) { if (panels[k].isOpen()) { return k; } }
+        return null;
+    }
+
+    function setPanel(name, open, restoreFocus) {
+        var p = panels[name];
+        if (!p) { return; }
+        if (open) {
+            for (var k in panels) {
+                if (k !== name && panels[k].isOpen()) { setPanel(k, false, false); }
+            }
+        }
+        p.set(open);
+        p.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+            var first = p.el.querySelector('[data-close]');
+            (first || p.el).focus();
+        } else if (restoreFocus) {
+            p.btn.focus();
+        }
+    }
+
+    // 開いているパネルがあれば閉じて true を返す
+    function closePanels(restoreFocus) {
+        var n = openName();
+        if (n) { setPanel(n, false, restoreFocus); }
+        return !!n;
+    }
+
+    function focusables(el) {
+        var list = el.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        return Array.prototype.filter.call(list, function (x) {
+            return !x.disabled && x.getClientRects().length > 0;
+        });
+    }
+
+    function trapFocus(el, e) {
+        var items = focusables(el);
+        if (!items.length) { e.preventDefault(); el.focus(); return; }
+        var first = items[0];
+        var last = items[items.length - 1];
+        var active = document.activeElement;
+        if (!el.contains(active)) {
+            e.preventDefault();
+            (e.shiftKey ? last : first).focus();
+        } else if (e.shiftKey && active === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && active === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
+
+    // ---------- 設定パネル ----------
     function buildPanel() {
         var tools = document.querySelector('.bar-tools');
         var btn = document.createElement('button');
@@ -284,10 +353,11 @@
         panel.id = 'settings';
         panel.className = 'settings';
         panel.hidden = true;
+        panel.tabIndex = -1;
         panel.setAttribute('role', 'dialog');
         panel.setAttribute('aria-label', '読書設定');
         panel.innerHTML =
-            '<div class="settings-head"><b>読書設定</b><button type="button" id="settings-close" aria-label="閉じる">×</button></div>' +
+            '<div class="settings-head"><b>読書設定</b><button type="button" id="settings-close" data-close aria-label="閉じる">×</button></div>' +
             '<fieldset><legend>書字方向</legend>' +
                 radio('mode', 'vertical', '縦書き', settings.mode) +
                 radio('mode', 'horizontal', '横書き', settings.mode) +
@@ -320,16 +390,21 @@
             '</fieldset>' +
             '<p class="fit-info" id="fit-info"></p>' +
             '<p class="fit-note">画面に入りきらない行数・文字数を選ぶと、画面に入るぶんだけ表示します。</p>' +
-            '<button type="button" id="settings-reset">初期設定に戻す</button>';
+            '<div class="settings-foot">' +
+                '<button type="button" id="settings-hint">めくり方を見る</button>' +
+                '<button type="button" id="settings-reset">初期設定に戻す</button>' +
+            '</div>';
         body.appendChild(panel);
 
-        function openPanel(open) {
-            panel.hidden = !open;
-            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        }
+        panels.settings = {
+            el: panel,
+            btn: btn,
+            isOpen: function () { return !panel.hidden; },
+            set: function (open) { panel.hidden = !open; }
+        };
 
-        btn.addEventListener('click', function () { openPanel(panel.hidden); });
-        document.getElementById('settings-close').addEventListener('click', function () { openPanel(false); btn.focus(); });
+        btn.addEventListener('click', function () { setPanel('settings', panel.hidden, true); });
+        document.getElementById('settings-close').addEventListener('click', function () { setPanel('settings', false, true); });
 
         function update(key, value) {
             settings[key] = value;
@@ -351,6 +426,11 @@
             update('fs', parseInt(fsInput.value, 10));
         });
 
+        document.getElementById('settings-hint').addEventListener('click', function () {
+            setPanel('settings', false, false);
+            showHint();
+        });
+
         document.getElementById('settings-reset').addEventListener('click', function () {
             for (var k in DEFAULTS) { settings[k] = DEFAULTS[k]; }
             saveSettings();
@@ -358,7 +438,7 @@
             btn.remove();
             buildPanel();
             layout(true);
-            document.getElementById('settings').hidden = false;
+            setPanel('settings', true);
         });
     }
 
@@ -367,28 +447,117 @@
         var info = document.getElementById('book-info');
         var infoBtn = document.getElementById('info-btn');
         if (!info || !infoBtn) { return; }
-        function openInfo(open) {
-            info.classList.toggle('open', open);
-            infoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            if (open) {
-                var sp = document.getElementById('settings');
-                if (sp) { sp.hidden = true; }
-            }
+        info.setAttribute('role', 'dialog');
+        info.tabIndex = -1;
+
+        // 目次:本文に見出しがある作品だけ、解説パネルの先頭に置く
+        var heads = pages.querySelectorAll('h2');
+        var tocItems = [];
+        if (heads.length) {
+            var toc = document.createElement('section');
+            toc.className = 'toc';
+            toc.innerHTML = '<h2>目次</h2><ol></ol>';
+            var ol = toc.querySelector('ol');
+            var targets = [[pages.querySelector('.cover'), '表紙']];
+            Array.prototype.forEach.call(heads, function (h) { targets.push([h, h.textContent]); });
+            targets.push([endEl, '読み終わり']);
+            targets.forEach(function (t) {
+                if (!t[0]) { return; }
+                var li = document.createElement('li');
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.innerHTML = '<span></span><span class="toc-page"></span>';
+                b.firstChild.textContent = t[1];
+                b.addEventListener('click', function () {
+                    setPanel('info', false, false);
+                    go(pageOf(t[0]), true);
+                    book.focus();
+                });
+                li.appendChild(b);
+                ol.appendChild(li);
+                tocItems.push([t[0], b.lastChild]);
+            });
+            var head = info.querySelector('.info-head');
+            head.parentNode.insertBefore(toc, head.nextSibling);
+            infoBtn.textContent = '目次・解説';
         }
-        infoBtn.addEventListener('click', function () { openInfo(!info.classList.contains('open')); });
+        function refreshToc() {
+            tocItems.forEach(function (t) { t[1].textContent = (pageOf(t[0]) + 1) + 'ページ'; });
+        }
         var close = document.getElementById('info-close');
-        if (close) { close.addEventListener('click', function () { openInfo(false); infoBtn.focus(); }); }
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && info.classList.contains('open')) { openInfo(false); }
-        });
-        // 設定を開いたら解説は閉じる
-        document.addEventListener('click', function (e) {
-            if (e.target.id === 'settings-btn') { openInfo(false); }
-        });
+        if (close) {
+            close.setAttribute('data-close', '');
+            close.addEventListener('click', function () { setPanel('info', false, true); });
+        }
+        panels.info = {
+            el: info,
+            btn: infoBtn,
+            isOpen: function () { return info.classList.contains('open'); },
+            set: function (open) {
+                info.classList.toggle('open', open);
+                if (open) { refreshToc(); }
+            }
+        };
+        infoBtn.addEventListener('click', function () { setPanel('info', !panels.info.isOpen(), true); });
     }
+
+    // ---------- めくり方の案内(初めて開いたときに一度だけ) ----------
+    var hint = document.createElement('div');
+    hint.className = 'tap-hint';
+    hint.hidden = true;
+    book.appendChild(hint);
+
+    function showHint() {
+        var v = isVertical();
+        hint.innerHTML =
+            '<div class="hint-zones" aria-hidden="true">' +
+                '<div class="hint-zone"><span class="hint-arrow">‹</span>' + (v ? '次のページ' : '前のページ') + '</div>' +
+                '<div class="hint-zone hint-center">メニュー</div>' +
+                '<div class="hint-zone">' + (v ? '前のページ' : '次のページ') + '<span class="hint-arrow">›</span></div>' +
+            '</div>' +
+            '<p class="hint-text" role="status">紙面の左右をタップするか、指で払うとページをめくれます(← → キーでも可)。' +
+                '中央をタップすると、上下のメニューを隠したり出したりできます。<br><b>どこかをタップして読みはじめる</b></p>';
+        hint.hidden = false;
+    }
+
+    function hideHint() {
+        if (hint.hidden) { return false; }
+        hint.hidden = true;
+        save('hint-seen', '1');
+        return true;
+    }
+
+    hint.addEventListener('click', function (e) {
+        e.stopPropagation();
+        hideHint();
+    });
+
+    // 紙面の中央をタップすると、上下のバーを隠して紙面を広く使う
+    function toggleChrome() {
+        body.classList.toggle('immersive');
+        layout(true);
+    }
+
+    // ---------- 読み終わり(最後のページ) ----------
+    var endEl = document.createElement('section');
+    endEl.className = 'the-end';
+    endEl.innerHTML =
+        '<p class="end-mark">(終)</p>' +
+        '<p>最後まで読んでいただき、ありがとうございました。</p>' +
+        '<p class="end-links">' +
+            '<a href="../">書棚へ戻る</a>' +
+            (document.getElementById('book-info') ? '<button type="button" id="end-info">解説・訳注を読む</button>' : '') +
+            '<button type="button" id="end-top">はじめから読む</button>' +
+        '</p>' +
+        '<p class="end-note">誤訳のご指摘やご感想は<a href="../contact.html">お問い合わせ</a>からどうぞ。</p>';
+    pages.appendChild(endEl);
+    var endInfo = document.getElementById('end-info');
+    if (endInfo) { endInfo.addEventListener('click', function () { setPanel('info', true); }); }
+    document.getElementById('end-top').addEventListener('click', function () { go(0, true); });
 
     // ---------- 起動 ----------
     root.classList.add('js');
+    book.tabIndex = -1;
     buildPanel();
     setupInfo();
 
@@ -396,6 +565,8 @@
     layout(false);
     page = Math.round(savedRatio * (total - 1));
     go(page, false);
+
+    if (load('hint-seen', null) !== '1') { showHint(); }
 
     var modeBtn = document.getElementById('mode');
     if (modeBtn) {
@@ -411,23 +582,31 @@
     document.getElementById('left').addEventListener('click', goLeft);
     document.getElementById('right').addEventListener('click', goRight);
 
-    // 紙面の左右をタップしてめくる(リンクのクリックは除く)
+    // 紙面の左右をタップしてめくる。中央はバーの表示・非表示。
+    // パネルが開いているときは、まずパネルを閉じるだけにする(裏でページを動かさない)。
     book.addEventListener('click', function (e) {
         if (e.target.closest('a, button')) { return; }
+        if (closePanels(true)) { return; }
         var rect = book.getBoundingClientRect();
         var x = (e.clientX - rect.left) / rect.width;
-        if (x < 0.4) { goLeft(); } else if (x > 0.6) { goRight(); }
+        if (x < 0.4) { goLeft(); }
+        else if (x > 0.6) { goRight(); }
+        else { toggleChrome(); }
     });
 
     document.addEventListener('keydown', function (e) {
-        var panelEl = document.getElementById('settings');
-        if (e.key === 'Escape' && panelEl && !panelEl.hidden) {
-            panelEl.hidden = true;
-            return;
+        var open = openName();
+        if (open) {
+            if (e.key === 'Escape') { setPanel(open, false, true); e.preventDefault(); return; }
+            if (e.key === 'Tab') { trapFocus(panels[open].el, e); return; }
+            if (panels[open].el.contains(e.target)) { return; }
         }
-        if (panelEl && !panelEl.hidden && e.target.closest && e.target.closest('#settings')) { return; }
-        var infoEl = document.getElementById('book-info');
-        if (infoEl && infoEl.classList.contains('open') && e.target.closest && e.target.closest('#book-info')) { return; }
+        if (hideHint() && e.key === 'Escape') { return; }
+        if (e.key === 'Escape' && body.classList.contains('immersive')) { toggleChrome(); return; }
+        var t = e.target;
+        if (t.closest && t.closest('input, select, textarea')) { return; }
+        // ボタンやリンクの上では、スペース・Enter は本来の働き(押す)を優先する
+        if (t.closest && t.closest('button, a') && (e.key === ' ' || e.key === 'Enter')) { return; }
         if (e.key === 'ArrowLeft') { goLeft(); e.preventDefault(); }
         else if (e.key === 'ArrowRight') { goRight(); e.preventDefault(); }
         else if (e.key === ' ' || e.key === 'PageDown') { next(); e.preventDefault(); }
@@ -435,6 +614,47 @@
         else if (e.key === 'Home') { go(0, true); }
         else if (e.key === 'End') { go(total - 1, true); }
     });
+
+    // 進み具合のバーを押すと、その位置へ移動する(縦書きは右端が先頭)
+    var progressEl = document.querySelector('.progress');
+    if (progressEl) {
+        progressEl.setAttribute('aria-hidden', 'true');
+        progressEl.title = '押した位置へ移動';
+        progressEl.addEventListener('click', function (e) {
+            var r = progressEl.getBoundingClientRect();
+            var x = (e.clientX - r.left) / r.width;
+            if (isVertical()) { x = 1 - x; }
+            go(Math.round(Math.max(0, Math.min(1, x)) * (total - 1)), true);
+        });
+    }
+
+    // マウスホイール・トラックパッドでめくる。
+    // 慣性で続くイベントで何ページも進まないよう、止まるまで次をめくらない。
+    var wheelLock = 0;
+    var wheelAcc = 0;
+    book.addEventListener('wheel', function (e) {
+        if (e.ctrlKey) { return; }   // ピンチでの拡大は邪魔しない
+        e.preventDefault();
+        if (openName()) { return; }
+        var now = Date.now();
+        if (now < wheelLock) {
+            wheelLock = Math.max(wheelLock, now + 150);
+            return;
+        }
+        var horiz = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+        var d = horiz ? e.deltaX : e.deltaY;
+        if (e.deltaMode === 1) { d *= 16; }   // 行単位のホイール
+        wheelAcc += d;
+        if (Math.abs(wheelAcc) < 30) { return; }
+        hideHint();
+        if (horiz) {
+            if (wheelAcc > 0) { goRight(); } else { goLeft(); }
+        } else {
+            if (wheelAcc > 0) { next(); } else { prev(); }
+        }
+        wheelAcc = 0;
+        wheelLock = now + 350;
+    }, { passive: false });
 
     var touchX = null;
     var touchY = null;
@@ -448,6 +668,8 @@
         var dy = e.changedTouches[0].clientY - touchY;
         touchX = null;
         if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            if (hideHint()) { return; }
+            if (closePanels(false)) { return; }
             // 指を右へ払う = 左のページを引き寄せる
             if (dx > 0) { goLeft(); } else { goRight(); }
         }
@@ -463,5 +685,4 @@
     if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(function () { layout(true); });
     }
-
 })();
