@@ -214,6 +214,7 @@
     }
 
     function layout(keepRatio) {
+        curlDrop();   // 組み直すと写しが古くなる
         var ratio = total > 1 ? page / (total - 1) : 0;
         applyStyle();
         sizePages();
@@ -249,8 +250,245 @@
         save(posKey, String(total > 1 ? page / (total - 1) : 0));
     }
 
-    function next() { go(page + 1, true); }
-    function prev() { go(page - 1, true); }
+    // ---------- ページめくり(紙の角がめくれるアニメーション) ----------
+    // 紙面(#book)の写しを2枚作り、1枚は「めくっているページの表」、もう1枚は鏡写しにして
+    // 「めくれた紙の裏(文字が透けて見える)」にする。下には本物の紙面(次のページ)が見えている。
+    // 紙の角 C を C' まで持ってきたとき、折り目は C と C' の垂直二等分線になる。
+    var motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    var curl = null;        // 進行中のめくり
+    var curlParts = null;   // 紙面の写し(組み直すたびに作り直す)
+
+    function reducedMotion() { return !!(motionQuery && motionQuery.matches); }
+
+    function curlDiv(cls) {
+        var d = document.createElement('div');
+        d.className = cls;
+        return d;
+    }
+
+    function curlSheet(cls) {
+        var el = book.cloneNode(true);
+        el.classList.add('curl-sheet', cls);
+        el.removeAttribute('id');
+        el.removeAttribute('tabindex');
+        Array.prototype.forEach.call(el.querySelectorAll('[id]'), function (x) { x.removeAttribute('id'); });
+        var h = el.querySelector('.tap-hint');
+        if (h) { h.parentNode.removeChild(h); }
+        el.inert = true;
+        var p = el.querySelector('.pages');
+        p.style.cssText = pages.style.cssText;
+        return { el: el, pages: p };
+    }
+
+    function curlBuild() {
+        if (curlParts) { return curlParts; }
+        var layer = curlDiv('curl-layer');
+        layer.setAttribute('aria-hidden', 'true');
+        var front = curlSheet('curl-front');
+        var under = curlDiv('curl-band curl-under');   // 折り目から下のページに落ちる影
+        var cast = curlDiv('curl-band curl-cast');     // めくれた紙が表のページに落とす影
+        var back = curlSheet('curl-back');
+        var shine = curlDiv('curl-band curl-shine');   // 紙の裏の丸みの陰影
+        back.el.appendChild(curlDiv('curl-veil'));
+        back.el.appendChild(shine);
+        layer.appendChild(front.el);
+        layer.appendChild(under);
+        layer.appendChild(cast);
+        layer.appendChild(back.el);
+        body.appendChild(layer);
+        curlParts = { layer: layer, front: front, back: back, under: under, cast: cast, shine: shine };
+        return curlParts;
+    }
+
+    function curlDrop() {
+        if (curl) { curlFinish(); }
+        if (curlParts) {
+            curlParts.layer.parentNode.removeChild(curlParts.layer);
+            curlParts = null;
+        }
+    }
+
+    function scrollToPage(el, n) {
+        var offset = n * (pageSize() + GAP);
+        if (isVertical()) { el.scrollLeft = 0; el.scrollTop = offset; }
+        else { el.scrollTop = 0; el.scrollLeft = offset; }
+    }
+
+    // 多角形 poly のうち、点 M を通り法線 n の直線の側(sign = 1 なら n の向き)を残す
+    function clipHalf(poly, M, n, sign) {
+        var out = [];
+        for (var i = 0; i < poly.length; i++) {
+            var a = poly[i];
+            var b = poly[(i + 1) % poly.length];
+            var da = sign * ((a[0] - M[0]) * n[0] + (a[1] - M[1]) * n[1]);
+            var db = sign * ((b[0] - M[0]) * n[0] + (b[1] - M[1]) * n[1]);
+            if (da >= 0) { out.push(a); }
+            if ((da >= 0) !== (db >= 0)) {
+                var t = da / (da - db);
+                out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+            }
+        }
+        return out;
+    }
+
+    function polygon(poly) {
+        if (poly.length < 3) { return 'polygon(0 0, 0 0, 0 0)'; }
+        return 'polygon(' + poly.map(function (p) {
+            return p[0].toFixed(1) + 'px ' + p[1].toFixed(1) + 'px';
+        }).join(', ') + ')';
+    }
+
+    // 折り目に沿った帯(影やつや)を置く。帯は折り目から dir の向きへ width だけ伸びる。
+    function placeBand(el, M, dir, width, opacity) {
+        var reach = curl.diag;
+        var angle = Math.atan2(dir[1], dir[0]) * 180 / Math.PI;
+        el.style.width = Math.max(0, width).toFixed(1) + 'px';
+        el.style.height = (reach * 2).toFixed(1) + 'px';
+        el.style.transform = 'translate(' + M[0].toFixed(1) + 'px,' + M[1].toFixed(1) + 'px) rotate(' +
+            angle.toFixed(2) + 'deg) translateY(' + (-reach).toFixed(1) + 'px)';
+        el.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+    }
+
+    // 角を (x, y) まで持ってきた形を描く
+    function curlRender(x, y) {
+        var c = curl, P = curlParts;
+        c.x = x;
+        c.y = y;
+        var W = c.w, H = c.h;
+        var vx = x - c.cx, vy = y - c.cy;
+        var len = Math.sqrt(vx * vx + vy * vy);
+        if (len < 0.5) {
+            P.front.el.style.clipPath = 'none';
+            P.back.el.style.visibility = 'hidden';
+            P.under.style.opacity = P.cast.style.opacity = '0';
+            return;
+        }
+        var n = [vx / len, vy / len];
+        var M = [(c.cx + x) / 2, (c.cy + y) / 2];
+        var rect = [[0, 0], [W, 0], [W, H], [0, H]];
+        var lift = clipHalf(rect, M, n, -1);    // めくれ上がった部分(紙面での位置)
+        P.front.el.style.clipPath = polygon(clipHalf(rect, M, n, 1));
+        // 紙の裏 = めくれた部分を折り目で裏返したもの
+        var a = 1 - 2 * n[0] * n[0], b = -2 * n[0] * n[1], d = 1 - 2 * n[1] * n[1];
+        var k = 2 * (M[0] * n[0] + M[1] * n[1]);
+        P.back.el.style.visibility = lift.length < 3 ? 'hidden' : 'visible';
+        P.back.el.style.clipPath = polygon(lift);
+        P.back.el.style.transform = 'matrix(' + [a, b, b, d, k * n[0], k * n[1]].map(function (v) {
+            return v.toFixed(5);
+        }).join(',') + ')';
+        // めくった量(0〜1)。影は、めくりはじめと終わりぎわには薄くする
+        var progress = Math.min(1, Math.abs(x - c.cx) / (2 * W));
+        var fade = Math.min(1, progress * 8, (1 - progress) * 6);
+        var depth = Math.min(len / 2, W * 0.5);  // 折り目から角までのおおよその深さ
+        placeBand(P.under, M, [-n[0], -n[1]], Math.max(24, depth * 0.6), fade);
+        placeBand(P.cast, M, n, Math.min(len / 2 + 24, W), fade * 0.9);
+        // 裏の陰影は写しの中に置く(写しといっしょに裏返る)
+        var reach = 0;
+        lift.forEach(function (p) {
+            reach = Math.max(reach, -((p[0] - M[0]) * n[0] + (p[1] - M[1]) * n[1]));
+        });
+        placeBand(P.shine, M, [-n[0], -n[1]], Math.max(1, reach), 1);
+    }
+
+    // めくりを始める。dir: 1 = 次のページ、-1 = 前のページ。
+    // 次へ:いまのページの写しがめくれていき、下に次のページが見える。
+    // 前へ:前のページの写しが、めくられた状態から戻ってきて、いまのページにかぶさる。
+    function curlStart(dir, fromTop) {
+        var P = curlBuild();
+        var r = book.getBoundingClientRect();
+        var W = r.width, H = r.height;
+        var ls = P.layer.style;
+        ls.left = r.left + 'px';
+        ls.top = r.top + 'px';
+        ls.width = W + 'px';
+        ls.height = H + 'px';
+        P.layer.classList.add('active');
+        // めくる側の端:縦書きは左、横書きは右(本と同じ)
+        var cx = isVertical() ? 0 : W;
+        var cy = fromTop ? 0 : H;
+        var from = page;
+        var shown = dir > 0 ? page : page - 1;
+        scrollToPage(P.front.pages, shown);
+        scrollToPage(P.back.pages, shown);
+        curl = {
+            dir: dir, from: from, w: W, h: H, cx: cx, cy: cy,
+            fx: 2 * (W - cx) - cx,      // 裏返しきったときの角の位置(背の向こう側)
+            diag: Math.sqrt(W * W + H * H),
+            x: cx, y: cy, anim: 0
+        };
+        if (dir > 0) {
+            go(page + 1, false);
+            curlRender(cx, cy);
+        } else {
+            curlRender(curl.fx, cy);
+        }
+    }
+
+    // 角をつかんで動かしているとき、紙が背から離れないように角の位置をおさえる
+    function curlConstrain(x, y) {
+        var c = curl;
+        var sx = c.w - c.cx;                  // 背(とじ側)の x
+        var oy = c.h - c.cy;                  // 反対側の角の y
+        var dx = x - sx, dy = y - c.cy;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > c.w) { x = sx + dx * c.w / dist; y = c.cy + dy * c.w / dist; }
+        dx = x - sx; dy = y - oy;
+        dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > c.diag) { x = sx + dx * c.diag / dist; y = oy + dy * c.diag / dist; }
+        return [x, y];
+    }
+
+    // 終わらせる(commit = ページを進める/戻すことを確定するか)
+    function curlEnd(commit) {
+        var c = curl;
+        if (!c) { return; }
+        cancelAnimationFrame(c.anim);
+        curl = null;
+        if (c.dir > 0 && !commit) { go(c.from, false); }
+        if (c.dir < 0 && commit) { go(c.from - 1, false); }
+        curlParts.layer.classList.remove('active');
+    }
+
+    // アニメーション中なら、すぐに行き着く先まで進めて終える
+    function curlFinish() {
+        if (!curl) { return; }
+        curlEnd(curl.target === undefined ? false : curl.target);   // 指でつかんでいる途中なら元に戻す
+    }
+
+    // 角を (tx, ty) まで動かして終える。arc を付けると、角が少し持ち上がる弧を描く。
+    function curlAnimate(tx, ty, duration, commit, arc) {
+        var c = curl;
+        var x0 = c.x, y0 = c.y, t0 = 0;
+        var lift = (c.cy === 0 ? 1 : -1) * c.h * 0.14;
+        c.target = commit;
+        cancelAnimationFrame(c.anim);
+        function step(now) {
+            if (curl !== c) { return; }
+            if (!t0) { t0 = now; }
+            var u = Math.min(1, (now - t0) / duration);
+            var e = arc ? (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2)  // ゆっくり始まりゆっくり終わる
+                        : 1 - Math.pow(1 - u, 3);                                     // すっと止まる
+            var y = y0 + (ty - y0) * e + (arc ? Math.sin(Math.PI * e) * lift : 0);
+            curlRender(x0 + (tx - x0) * e, y);
+            if (u < 1) { c.anim = requestAnimationFrame(step); }
+            else { curlEnd(commit); }
+        }
+        c.anim = requestAnimationFrame(step);
+    }
+
+    // タップ・キー・ボタンでめくる
+    function flip(dir) {
+        if (curl) { curlFinish(); }
+        var target = page + dir;
+        if (target < 0 || target > total - 1) { return; }
+        if (reducedMotion()) { go(target, false); return; }
+        curlStart(dir, false);
+        if (dir > 0) { curlAnimate(curl.fx, curl.cy, 520, true, true); }
+        else { curlAnimate(curl.cx, curl.cy, 520, true, true); }
+    }
+
+    function next() { flip(1); }
+    function prev() { flip(-1); }
 
     // 画面の左右:縦書きは左へ進み、横書きは右へ進む(本と同じ)
     function goLeft() { if (isVertical()) { next(); } else { prev(); } }
@@ -585,6 +823,7 @@
     // 紙面の左右をタップしてめくる。中央はバーの表示・非表示。
     // パネルが開いているときは、まずパネルを閉じるだけにする(裏でページを動かさない)。
     book.addEventListener('click', function (e) {
+        if (suppressClick) { suppressClick = false; return; }   // 指でめくった直後のクリックは無視
         if (e.target.closest('a, button')) { return; }
         if (closePanels(true)) { return; }
         var rect = book.getBoundingClientRect();
@@ -656,24 +895,82 @@
         wheelLock = now + 350;
     }, { passive: false });
 
-    var touchX = null;
-    var touchY = null;
-    book.addEventListener('touchstart', function (e) {
-        touchX = e.touches[0].clientX;
-        touchY = e.touches[0].clientY;
-    }, { passive: true });
-    book.addEventListener('touchend', function (e) {
-        if (touchX === null) { return; }
-        var dx = e.changedTouches[0].clientX - touchX;
-        var dy = e.changedTouches[0].clientY - touchY;
-        touchX = null;
-        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-            if (hideHint()) { return; }
-            if (closePanels(false)) { return; }
-            // 指を右へ払う = 左のページを引き寄せる
-            if (dx > 0) { goLeft(); } else { goRight(); }
-        }
+    // 指(またはペン)で紙の端をつかんでめくる。指を離したとき、十分に動かしていたか
+    // 勢いよく払っていればめくり、そうでなければ元に戻す。
+    // 指を右へ払う = 左のページを引き寄せる(縦書きなら次、横書きなら前)。
+    var drag = null;
+    var suppressClick = false;
+
+    book.addEventListener('pointerdown', function (e) {
+        suppressClick = false;
+        if (e.pointerType === 'mouse' || !e.isPrimary) { return; }
+        if (e.target.closest && e.target.closest('a, button')) { return; }
+        drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, active: false, done: false, vx: 0, lx: e.clientX, lt: e.timeStamp };
     });
+
+    book.addEventListener('pointermove', function (e) {
+        if (!drag || e.pointerId !== drag.id || drag.done) { return; }
+        var dx = e.clientX - drag.sx;
+        var dy = e.clientY - drag.sy;
+        if (!drag.active) {
+            if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) { return; }
+            suppressClick = true;
+            if (hideHint() || closePanels(false)) { drag.done = true; return; }
+            var dir = (dx > 0) === isVertical() ? 1 : -1;
+            if (page + dir < 0 || page + dir > total - 1 || reducedMotion()) {
+                // 端のページか、動きを減らす設定のとき:指を離したときにそのまま切りかえる
+                drag.done = true;
+                drag.instant = dir;
+                return;
+            }
+            if (curl) { curlFinish(); }
+            var r = book.getBoundingClientRect();
+            curlStart(dir, drag.sy - r.top < r.height / 2);
+            drag.active = true;
+            drag.dir = dir;
+            drag.left = r.left;
+            drag.top = r.top;
+            try { book.setPointerCapture(e.pointerId); } catch (err) { /* なくても動く */ }
+        }
+        var dt = e.timeStamp - drag.lt;
+        if (dt > 0) { drag.vx = drag.vx * 0.5 + ((e.clientX - drag.lx) / dt) * 0.5; }
+        drag.lx = e.clientX;
+        drag.lt = e.timeStamp;
+        var c = curl;
+        if (!c) { return; }
+        // 次へ:つかんだところが指についてくる。前へ:折り目が指についてくる。
+        var x = drag.dir > 0 ? c.cx + dx : c.fx + dx * 2;
+        var y = c.cy + dy;
+        var p = curlConstrain(x, y);
+        curlRender(p[0], p[1]);
+        e.preventDefault();
+    });
+
+    function dragEnd(e, cancelled) {
+        if (!drag || e.pointerId !== drag.id) { return; }
+        var d = drag;
+        drag = null;
+        if (d.instant && !cancelled) {
+            var dx = e.clientX - d.sx;
+            if (Math.abs(dx) > 40) { go(page + d.instant, true); }
+            return;
+        }
+        if (!d.active || !curl) { return; }
+        var c = curl;
+        var progress = Math.abs(c.x - c.cx) / (2 * c.w);   // 0 = めくる前、1 = めくり終わり
+        var toward = (c.fx > c.cx ? 1 : -1) * d.vx;          // めくる向きへの指の速さ(px/ms)
+        var commit;
+        if (cancelled) { commit = false; }
+        else if (d.dir > 0) { commit = toward > 0.25 || (toward > -0.1 && progress > 0.25); }
+        else { commit = toward < -0.25 || (toward < 0.1 && progress < 0.75); }
+        var goEnd = (d.dir > 0) === commit;                  // 角を背の向こうまで送るか
+        var tx = goEnd ? c.fx : c.cx;
+        var remain = Math.abs(tx - c.x) / (2 * c.w);
+        curlAnimate(tx, c.cy, 160 + 320 * remain, commit, false);
+    }
+
+    book.addEventListener('pointerup', function (e) { dragEnd(e, false); });
+    book.addEventListener('pointercancel', function (e) { dragEnd(e, true); });
 
     var timer = null;
     window.addEventListener('resize', function () {
