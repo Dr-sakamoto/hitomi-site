@@ -22,7 +22,8 @@
         lh: 1.85,           // 行間
         font: 'mincho',     // mincho | gothic
         theme: 'auto',      // auto | paper | white | dark
-        ruby: 'first'       // first(初出のみ)| all(すべて)| none(なし)
+        ruby: 'first',      // first(初出のみ)| all(すべて)| none(なし)
+        flip: 'auto'        // auto(端末の「動きを減らす」に従う)| curl(紙をめくる)| none(切りかえるだけ)
     };
 
     function load(key, fallback) {
@@ -58,6 +59,7 @@
             case 'font': return v === 'mincho' || v === 'gothic';
             case 'theme': return v === 'auto' || v === 'paper' || v === 'white' || v === 'dark';
             case 'ruby': return v === 'first' || v === 'all' || v === 'none';
+            case 'flip': return v === 'auto' || v === 'curl' || v === 'none';
             case 'fs': return typeof v === 'number' && v % 1 === 0 && v >= 14 && v <= 28;
             case 'lines': return typeof v === 'number' && v % 1 === 0 && v >= 0 && v <= 40;
             case 'chars': return typeof v === 'number' && v % 1 === 0 && v >= 0 && v <= 60;
@@ -258,7 +260,11 @@
     var curl = null;        // 進行中のめくり
     var curlParts = null;   // 紙面の写し(組み直すたびに作り直す)
 
-    function reducedMotion() { return !!(motionQuery && motionQuery.matches); }
+    function reducedMotion() {
+        if (settings.flip === 'curl') { return false; }
+        if (settings.flip === 'none') { return true; }
+        return !!(motionQuery && motionQuery.matches);
+    }
 
     function curlDiv(cls) {
         var d = document.createElement('div');
@@ -371,7 +377,7 @@
         // 紙の裏 = めくれた部分を折り目で裏返したもの
         var a = 1 - 2 * n[0] * n[0], b = -2 * n[0] * n[1], d = 1 - 2 * n[1] * n[1];
         var k = 2 * (M[0] * n[0] + M[1] * n[1]);
-        P.back.el.style.visibility = lift.length < 3 ? 'hidden' : 'visible';
+        P.back.el.style.visibility = lift.length < 3 ? 'hidden' : 'inherit';
         P.back.el.style.clipPath = polygon(lift);
         P.back.el.style.transform = 'matrix(' + [a, b, b, d, k * n[0], k * n[1]].map(function (v) {
             return v.toFixed(5);
@@ -626,6 +632,12 @@
                 radio('ruby', 'all', 'すべて', settings.ruby) +
                 radio('ruby', 'none', 'なし', settings.ruby) +
             '</fieldset>' +
+            '<fieldset><legend>めくるときの動き</legend>' +
+                radio('flip', 'auto', '自動', settings.flip) +
+                radio('flip', 'curl', '紙をめくる', settings.flip) +
+                radio('flip', 'none', '切りかえ', settings.flip) +
+            '</fieldset>' +
+            '<p class="fit-note">「自動」は、端末で動きを減らす設定(iPhone の「視差効果を減らす」など)をしていると切りかえになります。</p>' +
             '<p class="fit-info" id="fit-info"></p>' +
             '<p class="fit-note">画面に入りきらない行数・文字数を選ぶと、画面に入るぶんだけ表示します。</p>' +
             '<div class="settings-foot">' +
@@ -652,7 +664,7 @@
 
         panel.addEventListener('change', function (e) {
             var t = e.target;
-            if (t.name === 'mode' || t.name === 'font' || t.name === 'theme' || t.name === 'ruby') { update(t.name, t.value); }
+            if (t.name === 'mode' || t.name === 'font' || t.name === 'theme' || t.name === 'ruby' || t.name === 'flip') { update(t.name, t.value); }
             else if (t.id === 'set-lines') { update('lines', parseInt(t.value, 10)); }
             else if (t.id === 'set-chars') { update('chars', parseInt(t.value, 10)); }
             else if (t.id === 'set-lh') { update('lh', parseFloat(t.value)); }
