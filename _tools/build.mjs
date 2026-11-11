@@ -200,7 +200,6 @@ for (const w of works) {
         return [
             `<li data-book="${href}">`,
             `    <a class="book-cover" href="${href}" data-cover="${w.slug}">`,
-            `        <span class="badge">${escapeHtml(w.range)}</span>`,
             `        <span class="${titleClass}">${t}</span>`,
             // 色だけでジャンルを伝えない(色覚によっては見分けにくい組がある)ので、名前も出す
             '        <span class="foot">',
