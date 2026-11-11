@@ -29,7 +29,8 @@
    | `originalTitle` | `Beantwortung der Frage: …` | JSON-LD |
    | `description` | 検索結果・SNS に出る説明文 | meta description、OGP、JSON-LD |
    | `shelfNote` | `「…」。` | 書棚の説明の後半、OGP 画像の一行 |
-   | `genre` | `政治・社会` | 表紙と OGP 画像の色(`genres` の色。YouTube のサムネイルと同じ) |
+   | `genre` | `ドイツ観念論` | 表紙のジャンル名と、表紙・OGP 画像の色(`genres` の7つのどれか。著者ごとに1つ。YouTube のサムネイルと同じ名前・同じ色) |
+   | `portrait`(任意) | `kant` | 表紙と OGP 画像に出す著者の肖像の網点(`art/kant-cover.png`・`art/kant-wide.png`)。無ければ粒だけの表紙になる。下の「網点の絵」 |
    | `updated` | `2026-11-07` | サイトマップ(トップの更新日にも反映) |
    | `ogpNote`(任意) | | OGP 画像の一行を `shelfNote` と変えたいとき |
    | `books`(任意) | `[{ "title": "啓蒙とは何か 他四篇(岩波文庫)", "url": "https://…" }]` | 「解説」パネルの「紙の本で読む」(下の「紙の本の購入リンク」) |
@@ -52,6 +53,31 @@
 
 トップページの紹介文や `meta description` など、印(`ここから自動生成` 〜 `ここまで自動生成`)の外は
 これまでどおり `index.html` を直接直します。
+
+## 網点の絵(`art/`)
+
+表紙・OGP 画像・見出しの下の粒の帯は、YouTube のサムネイルと同じ網点の絵を使います。
+
+| ファイル | 使う所 |
+|---|---|
+| `art/<人物>-cover.png` | 書棚の表紙(著者の肖像の網点+下からの粒) |
+| `art/<人物>-wide.png` | OGP 画像(サムネイルの案1 と同じ組み) |
+| `art/dust-cover.png`・`art/dust-wide.png` | 肖像がまだ無い作品の表紙・OGP 画像(粒だけ) |
+| `art/dust.png` | トップと固定ページの、見出しの下・フッターの粒の帯 |
+
+- どれも「黒の濃さ」だけの画像です(色は黒、透明度が濃さ)。色は `site.css` と `ogp/_card.html` で付けるので、
+  ジャンルの色を変えても作り直す必要はありません。
+- 作るのは非公開リポジトリの道具です(サムネイルと同じ `halftone.py` で描く)。新しい著者を足したら、
+  肖像を `studio/thumb/portraits.json` に登録してから:
+
+  ```bash
+  python3 studio/thumb/make_site_art.py <人物>     # ../horaana-Library/art/ に書き出す
+  ```
+
+- そのあと `works.json` の作品に `"portrait": "<人物>"` を書き、`node _tools/build.mjs` と
+  `node _tools/build.mjs --ogp-all` を走らせます。肖像の出典は、サムネイルと同じく非公開リポジトリの
+  `studio/thumb/SOURCES.md` に記録します(パブリックドメイン・CC0・CC BY のものだけ)。
+- 読む画面(`philosophy/reader.css`)には網点を入れていません(読みやすさ優先)。
 
 ## 紙の本の購入リンク(広告)
 
