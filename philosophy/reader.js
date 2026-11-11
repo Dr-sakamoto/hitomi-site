@@ -834,15 +834,19 @@
 
     // 紙面の左右をタップしてめくる。中央はバーの表示・非表示。
     // パネルが開いているときは、まずパネルを閉じるだけにする(裏でページを動かさない)。
-    book.addEventListener('click', function (e) {
-        if (suppressClick) { suppressClick = false; return; }   // 指でめくった直後のクリックは無視
-        if (e.target.closest('a, button')) { return; }
+    function tapAt(clientX) {
         if (closePanels(true)) { return; }
         var rect = book.getBoundingClientRect();
-        var x = (e.clientX - rect.left) / rect.width;
+        var x = (clientX - rect.left) / rect.width;
         if (x < 0.4) { goLeft(); }
         else if (x > 0.6) { goRight(); }
         else { toggleChrome(); }
+    }
+
+    book.addEventListener('click', function (e) {
+        if (suppressClick) { suppressClick = false; return; }   // 指でめくった直後のクリックは無視
+        if (e.target.closest('a, button')) { return; }
+        tapAt(e.clientX);
     });
 
     document.addEventListener('keydown', function (e) {
@@ -907,41 +911,67 @@
         wheelLock = now + 350;
     }, { passive: false });
 
-    // 指(またはペン)で紙の端をつかんでめくる。指を離したとき、十分に動かしていたか
-    // 勢いよく払っていればめくり、そうでなければ元に戻す。
+    // 指(またはペン)で紙の端をつかんでめくる。指を離したとき、少しでもめくっていれば
+    // (紙面の幅の1割ほど)、または軽く払っていればめくり、引き戻していれば元に戻す。
     // 指を右へ払う = 左のページを引き寄せる(縦書きなら次、横書きなら前)。
+    // 紙面の外(左右の余白)から払いはじめてもめくれる。
     var drag = null;
     var suppressClick = false;
+    var SWIPE_START = 10;       // これだけ横に動いたら「払った」とみなす(px)
+    var SWIPE_DIST = 0.1;       // 紙面の幅に対して、これだけ指を動かせばめくる
+    var SWIPE_SPEED = 0.12;     // これより速く払っていれば、距離が足りなくてもめくる(px/ms)
+    var SWIPE_BACK = 0.2;       // これより速く引き戻していれば、めくらない(px/ms)
+    var EDGE = 24;              // 画面の左右の端とみなす幅(px)
 
-    book.addEventListener('pointerdown', function (e) {
+    // 紙面か、そのまわりの余白で始まった操作か(上下のバーやパネルは除く)
+    function onPaper(t) {
+        if (!t || !t.closest || t.closest('a, button')) { return false; }
+        return t === body || t === root || book.contains(t);
+    }
+
+    // 画面の端から払うと、ブラウザの「前の画面に戻る」(書棚へ戻ってしまう)が働くことがある。
+    // ページをめくる動きとまぎらわしいので、紙面では端からの操作をブラウザに渡さない。
+    // (こうすると端のタップが click にならないので、タップは dragEnd で自前に扱う)
+    document.addEventListener('touchstart', function (e) {
+        if (e.touches.length !== 1 || !onPaper(e.target)) { return; }
+        var x = e.touches[0].clientX;
+        if (x < EDGE || x > window.innerWidth - EDGE) {
+            if (e.cancelable) { e.preventDefault(); }
+            if (drag) { drag.edge = true; }
+        }
+    }, { passive: false });
+
+    document.addEventListener('pointerdown', function (e) {
         suppressClick = false;
+        drag = null;
         if (e.pointerType === 'mouse' || !e.isPrimary) { return; }
-        if (e.target.closest && e.target.closest('a, button')) { return; }
-        drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, active: false, done: false, vx: 0, lx: e.clientX, lt: e.timeStamp };
+        if (!onPaper(e.target)) { return; }
+        drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, active: false, done: false, vx: 0, lx: e.clientX, lt: e.timeStamp,
+                 inBook: book.contains(e.target), edge: false };
     });
 
-    book.addEventListener('pointermove', function (e) {
+    document.addEventListener('pointermove', function (e) {
         if (!drag || e.pointerId !== drag.id || drag.done) { return; }
         var dx = e.clientX - drag.sx;
         var dy = e.clientY - drag.sy;
         if (!drag.active) {
-            if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) { return; }
+            if (Math.abs(dx) < SWIPE_START || Math.abs(dx) < Math.abs(dy)) { return; }
             suppressClick = true;
+            drag.moved = true;
             if (hideHint() || closePanels(false)) { drag.done = true; return; }
             var dir = (dx > 0) === isVertical() ? 1 : -1;
-            if (page + dir < 0 || page + dir > total - 1 || reducedMotion()) {
-                // 端のページか、動きを減らす設定のとき:指を離したときにそのまま切りかえる
+            drag.dir = dir;
+            if (page + dir < 0 || page + dir > total - 1) { drag.done = true; return; }
+            if (reducedMotion()) {
+                // 動きを減らす設定のとき:指を離したときにそのまま切りかえる
                 drag.done = true;
-                drag.instant = dir;
+                drag.instant = true;
                 return;
             }
             if (curl) { curlFinish(); }
             var r = book.getBoundingClientRect();
             curlStart(dir, drag.sy - r.top < r.height / 2);
             drag.active = true;
-            drag.dir = dir;
-            drag.left = r.left;
-            drag.top = r.top;
             try { book.setPointerCapture(e.pointerId); } catch (err) { /* なくても動く */ }
         }
         var dt = e.timeStamp - drag.lt;
@@ -962,27 +992,31 @@
         if (!drag || e.pointerId !== drag.id) { return; }
         var d = drag;
         drag = null;
-        if (d.instant && !cancelled) {
-            var dx = e.clientX - d.sx;
-            if (Math.abs(dx) > 40) { go(page + d.instant, true); }
+        // 指を動かした向き(めくる向きを正とする)
+        var sign = (isVertical() ? 1 : -1) * (d.dir || 1);
+        if (!d.moved) {
+            // 端のタップ(ブラウザに渡していないので click が来ない)
+            if (d.edge && d.inBook && !cancelled && !hideHint()) { tapAt(e.clientX); }
+            return;
+        }
+        if (d.instant) {
+            if (!cancelled && (e.clientX - d.sx) * sign > 30) { go(page + d.dir, true); }
             return;
         }
         if (!d.active || !curl) { return; }
         var c = curl;
-        var progress = Math.abs(c.x - c.cx) / (2 * c.w);   // 0 = めくる前、1 = めくり終わり
-        var toward = (c.fx > c.cx ? 1 : -1) * d.vx;          // めくる向きへの指の速さ(px/ms)
-        var commit;
-        if (cancelled) { commit = false; }
-        else if (d.dir > 0) { commit = toward > 0.25 || (toward > -0.1 && progress > 0.25); }
-        else { commit = toward < -0.25 || (toward < 0.1 && progress < 0.75); }
-        var goEnd = (d.dir > 0) === commit;                  // 角を背の向こうまで送るか
+        // 指を動かした距離(紙面の幅を 1 として)。前へ戻るときは角が指の2倍動く
+        var pulled = d.dir > 0 ? Math.abs(c.x - c.cx) / c.w : Math.abs(c.x - c.fx) / (2 * c.w);
+        var toward = sign * d.vx;                   // めくる向きへの指の速さ(px/ms)
+        var commit = !cancelled && toward > -SWIPE_BACK && (pulled > SWIPE_DIST || toward > SWIPE_SPEED);
+        var goEnd = (d.dir > 0) === commit;         // 角を背の向こうまで送るか
         var tx = goEnd ? c.fx : c.cx;
         var remain = Math.abs(tx - c.x) / (2 * c.w);
         curlAnimate(tx, c.cy, 160 + 320 * remain, commit, false);
     }
 
-    book.addEventListener('pointerup', function (e) { dragEnd(e, false); });
-    book.addEventListener('pointercancel', function (e) { dragEnd(e, true); });
+    document.addEventListener('pointerup', function (e) { dragEnd(e, false); });
+    document.addEventListener('pointercancel', function (e) { dragEnd(e, true); });
 
     var timer = null;
     window.addEventListener('resize', function () {
