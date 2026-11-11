@@ -250,6 +250,7 @@ footer {
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
 .book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; background-image: url(art/kant-cover.png); }
+.book-cover[data-cover="marx-manifest"] { --cover: #10a760; }
 .book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; background-image: url(art/freud-cover.png); }
 /* ここまで自動生成 */
 

@@ -38,6 +38,20 @@
       "portrait": "kant"
     },
     {
+      "slug": "marx-manifest",
+      "title": "共産党宣言",
+      "author": "マルクス、エンゲルス",
+      "authorDates": "1818–1883、1820–1895",
+      "year": 1848,
+      "language": "ドイツ語",
+      "range": "全訳",
+      "originalTitle": "Manifest der Kommunistischen Partei",
+      "description": "マルクスとエンゲルス『共産党宣言』の全文を、1848年のドイツ語初版から日本語に無料で翻訳。「ヨーロッパに幽霊が出る」「これまでのあらゆる社会の歴史は、階級闘争の歴史である」。",
+      "shelfNote": "「これまでのあらゆる社会の歴史は、階級闘争の歴史である」。",
+      "updated": "2026-11-11",
+      "genre": "政治・経済思想"
+    },
+    {
       "slug": "freud-difficulty",
       "title": "精神分析のある困難",
       "author": "フロイト",
