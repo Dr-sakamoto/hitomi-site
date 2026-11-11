@@ -29,7 +29,7 @@
    | `originalTitle` | `Beantwortung der Frage: …` | JSON-LD |
    | `description` | 検索結果・SNS に出る説明文 | meta description、OGP、JSON-LD |
    | `shelfNote` | `「…」。` | 書棚の説明の後半、OGP 画像の一行 |
-   | `genre` | `政治・社会` | 表紙と OGP 画像の色(`genres` の色。YouTube のサムネイルと同じ) |
+   | `genre` | `ドイツ観念論` | 表紙のジャンル名と、表紙・OGP 画像の色(`genres` の7つのどれか。著者ごとに1つ。YouTube のサムネイルと同じ名前・同じ色) |
    | `portrait`(任意) | `kant` | 表紙と OGP 画像に出す著者の肖像の網点(`art/kant-cover.png`・`art/kant-wide.png`)。無ければ粒だけの表紙になる。下の「網点の絵」 |
    | `updated` | `2026-11-07` | サイトマップ(トップの更新日にも反映) |
    | `ogpNote`(任意) | | OGP 画像の一行を `shelfNote` と変えたいとき |

@@ -202,7 +202,11 @@ for (const w of works) {
             `    <a class="book-cover" href="${href}" data-cover="${w.slug}">`,
             `        <span class="badge">${escapeHtml(w.range)}</span>`,
             `        <span class="${titleClass}">${t}</span>`,
-            `        <span class="author">${escapeHtml(w.author)}</span>`,
+            // 色だけでジャンルを伝えない(色覚によっては見分けにくい組がある)ので、名前も出す
+            '        <span class="foot">',
+            `            <span class="author">${escapeHtml(w.author)}</span>`,
+            `            <span class="genre">${escapeHtml(w.genre)}</span>`,
+            '        </span>',
             '        <span class="progress-bar" aria-hidden="true"></span>',
             '    </a>',
             `    <div class="book-info">${w.year}年/${escapeHtml(w.language)}原典より。${escapeHtml(w.shelfNote)}</div>`,

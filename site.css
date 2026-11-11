@@ -118,7 +118,7 @@ footer::after {
     padding: 14px 12px 12px;
     color: var(--black);
     text-decoration: none;
-    background-color: var(--cover, #5098f4);
+    background-color: var(--cover, #438af1);
     background-image: url(art/dust-cover.png);
     background-size: cover;
     background-position: center bottom;
@@ -156,16 +156,34 @@ footer::after {
     max-height: none;
 }
 
+.book-cover .foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.4;
+}
+
 /* 著者名は黒い札に白(後ろの網点と粒に埋もれないように) */
 .book-cover .author {
     align-self: flex-start;
-    margin-bottom: 6px;
     padding: 2px 8px 3px;
     background: var(--black);
     color: #fff;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: .12em;
+}
+
+/* ジャンル名。色だけに頼らず文字でも伝える */
+/* 著者名と同じく黒い札に載せる(後ろの網点と粒に埋もれないように)。字は表紙の色 */
+.book-cover .genre {
+    align-self: flex-start;
+    padding: 1px 6px 2px;
+    background: var(--black);
+    color: var(--cover, #fff);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
 }
 
 .book-cover .badge {
@@ -241,8 +259,8 @@ footer {
 
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
-.book-cover[data-cover="kant-aufklaerung"] { --cover: #fa6741; background-image: url(art/kant-cover.png); }
-.book-cover[data-cover="freud-difficulty"] { --cover: #f8a626; background-image: url(art/freud-cover.png); }
+.book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; background-image: url(art/kant-cover.png); }
+.book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; background-image: url(art/freud-cover.png); }
 /* ここまで自動生成 */
 
 /* --- ユーザー別の本棚 --- */
@@ -277,13 +295,13 @@ footer {
     display: block;
     height: 100%;
     width: var(--p, 0%);
-    background: #e8c46a;
+    background: var(--black);   /* 金色だと黄色の表紙(現代思想)で見えない */
 }
 .book-cover.is-fav::before {
     content: "★";
     position: absolute;
     top: 6px; right: 8px;
-    color: #e8c46a;
+    color: var(--black);
     font-size: 16px;
 }
 .book-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
