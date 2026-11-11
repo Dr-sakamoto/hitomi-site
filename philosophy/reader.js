@@ -1,5 +1,5 @@
 // ===== ほらあな哲学書庫 ビューワー =====
-// 本文(#pages)を CSS 段組みでページに分け、クリック・キー・スワイプでめくる(スワイプは進むだけ)。
+// 本文(#pages)を CSS 段組みでページに分け、クリック・キー・スワイプでめくる。
 // 読書設定(書字方向・文字サイズ・1ページの行数・1行の文字数・行間・書体・背景・ルビ)と
 // 読んでいた位置は、この端末のブラウザに記憶する。
 
@@ -765,7 +765,7 @@
                 '<div class="hint-zone hint-center">メニュー</div>' +
                 '<div class="hint-zone">' + (v ? '前のページ' : '次のページ') + '<span class="hint-arrow">›</span></div>' +
             '</div>' +
-            '<p class="hint-text" role="status">紙面の左右をタップするとページをめくれます(← → キーでも可)。指で払うと次のページへ進みます(払って戻ることはありません)。' +
+            '<p class="hint-text" role="status">紙面の左右をタップするか、指で払うとページをめくれます(← → キーでも可)。' +
                 '中央をタップすると、上下のメニューを隠したり出したりできます。<br><b>どこかをタップして読みはじめる</b></p>';
         hint.hidden = false;
     }
@@ -834,15 +834,19 @@
 
     // 紙面の左右をタップしてめくる。中央はバーの表示・非表示。
     // パネルが開いているときは、まずパネルを閉じるだけにする(裏でページを動かさない)。
-    book.addEventListener('click', function (e) {
-        if (suppressClick) { suppressClick = false; return; }   // 指でめくった直後のクリックは無視
-        if (e.target.closest('a, button')) { return; }
+    function tapAt(clientX) {
         if (closePanels(true)) { return; }
         var rect = book.getBoundingClientRect();
-        var x = (e.clientX - rect.left) / rect.width;
+        var x = (clientX - rect.left) / rect.width;
         if (x < 0.4) { goLeft(); }
         else if (x > 0.6) { goRight(); }
         else { toggleChrome(); }
+    }
+
+    book.addEventListener('click', function (e) {
+        if (suppressClick) { suppressClick = false; return; }   // 指でめくった直後のクリックは無視
+        if (e.target.closest('a, button')) { return; }
+        tapAt(e.clientX);
     });
 
     document.addEventListener('keydown', function (e) {
@@ -907,46 +911,57 @@
         wheelLock = now + 350;
     }, { passive: false });
 
-    // 指(またはペン)で紙の端をつかんでめくる。指で払ってめくれるのは「次のページ」だけ。
-    // 前のページへは、紙面の端のタップ・下の矢印ボタン・キーで戻る
-    // (払う向きをまちがえて戻ってしまったり、ブラウザの「戻る」操作とまぎれたりしないように)。
-    // 指を離したとき、少しでもめくっていれば(紙面の幅の1割ほど)、または軽く払っていれば
-    // めくり、引き戻していれば元に戻す。
-    // 進む向き:縦書きは指を右へ(左のページを引き寄せる)、横書きは指を左へ。
+    // 指(またはペン)で紙の端をつかんでめくる。指を離したとき、少しでもめくっていれば
+    // (紙面の幅の1割ほど)、または軽く払っていればめくり、引き戻していれば元に戻す。
+    // 指を右へ払う = 左のページを引き寄せる(縦書きなら次、横書きなら前)。
+    // 紙面の外(左右の余白)から払いはじめてもめくれる。
     var drag = null;
     var suppressClick = false;
     var SWIPE_START = 10;       // これだけ横に動いたら「払った」とみなす(px)
-    var SWIPE_DIST = 0.1;       // 紙面の幅に対して、これだけ引けばめくる
+    var SWIPE_DIST = 0.1;       // 紙面の幅に対して、これだけ指を動かせばめくる
     var SWIPE_SPEED = 0.12;     // これより速く払っていれば、距離が足りなくてもめくる(px/ms)
     var SWIPE_BACK = 0.2;       // これより速く引き戻していれば、めくらない(px/ms)
+    var EDGE = 24;              // 画面の左右の端とみなす幅(px)
 
-    function forwardSign() { return isVertical() ? 1 : -1; }   // 進む向きの dx の符号
+    // 紙面か、そのまわりの余白で始まった操作か(上下のバーやパネルは除く)
+    function onPaper(t) {
+        if (!t || !t.closest || t.closest('a, button')) { return false; }
+        return t === body || t === root || book.contains(t);
+    }
 
-    book.addEventListener('pointerdown', function (e) {
+    // 画面の端から払うと、ブラウザの「前の画面に戻る」(書棚へ戻ってしまう)が働くことがある。
+    // ページをめくる動きとまぎらわしいので、紙面では端からの操作をブラウザに渡さない。
+    // (こうすると端のタップが click にならないので、タップは dragEnd で自前に扱う)
+    document.addEventListener('touchstart', function (e) {
+        if (e.touches.length !== 1 || !onPaper(e.target)) { return; }
+        var x = e.touches[0].clientX;
+        if (x < EDGE || x > window.innerWidth - EDGE) {
+            if (e.cancelable) { e.preventDefault(); }
+            if (drag) { drag.edge = true; }
+        }
+    }, { passive: false });
+
+    document.addEventListener('pointerdown', function (e) {
         suppressClick = false;
+        drag = null;
         if (e.pointerType === 'mouse' || !e.isPrimary) { return; }
-        if (e.target.closest && e.target.closest('a, button')) { return; }
-        drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, active: false, done: false, vx: 0, lx: e.clientX, lt: e.timeStamp };
+        if (!onPaper(e.target)) { return; }
+        drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, active: false, done: false, vx: 0, lx: e.clientX, lt: e.timeStamp,
+                 inBook: book.contains(e.target), edge: false };
     });
 
-    book.addEventListener('pointermove', function (e) {
+    document.addEventListener('pointermove', function (e) {
         if (!drag || e.pointerId !== drag.id || drag.done) { return; }
         var dx = e.clientX - drag.sx;
         var dy = e.clientY - drag.sy;
-        var dt = e.timeStamp - drag.lt;
-        if (dt > 0) { drag.vx = drag.vx * 0.5 + ((e.clientX - drag.lx) / dt) * 0.5; }
-        drag.lx = e.clientX;
-        drag.lt = e.timeStamp;
         if (!drag.active) {
             if (Math.abs(dx) < SWIPE_START || Math.abs(dx) < Math.abs(dy)) { return; }
             suppressClick = true;
-            if (!drag.dismissed) {
-                drag.dismissed = true;
-                if (hideHint() || closePanels(false)) { drag.done = true; return; }
-            }
-            // 戻る向きへ払っても何もしない(そのまま進む向きへ払い直せば、めくりはじめる)
-            if (dx * forwardSign() < 0) { return; }
-            if (page + 1 > total - 1) { drag.done = true; return; }
+            drag.moved = true;
+            if (hideHint() || closePanels(false)) { drag.done = true; return; }
+            var dir = (dx > 0) === isVertical() ? 1 : -1;
+            drag.dir = dir;
+            if (page + dir < 0 || page + dir > total - 1) { drag.done = true; return; }
             if (reducedMotion()) {
                 // 動きを減らす設定のとき:指を離したときにそのまま切りかえる
                 drag.done = true;
@@ -955,14 +970,20 @@
             }
             if (curl) { curlFinish(); }
             var r = book.getBoundingClientRect();
-            curlStart(1, drag.sy - r.top < r.height / 2);
+            curlStart(dir, drag.sy - r.top < r.height / 2);
             drag.active = true;
             try { book.setPointerCapture(e.pointerId); } catch (err) { /* なくても動く */ }
         }
+        var dt = e.timeStamp - drag.lt;
+        if (dt > 0) { drag.vx = drag.vx * 0.5 + ((e.clientX - drag.lx) / dt) * 0.5; }
+        drag.lx = e.clientX;
+        drag.lt = e.timeStamp;
         var c = curl;
         if (!c) { return; }
-        // つかんだところが指についてくる
-        var p = curlConstrain(c.cx + dx, c.cy + dy);
+        // 次へ:つかんだところが指についてくる。前へ:折り目が指についてくる。
+        var x = drag.dir > 0 ? c.cx + dx : c.fx + dx * 2;
+        var y = c.cy + dy;
+        var p = curlConstrain(x, y);
         curlRender(p[0], p[1]);
         e.preventDefault();
     });
@@ -971,23 +992,31 @@
         if (!drag || e.pointerId !== drag.id) { return; }
         var d = drag;
         drag = null;
-        var sign = forwardSign();
+        // 指を動かした向き(めくる向きを正とする)
+        var sign = (isVertical() ? 1 : -1) * (d.dir || 1);
+        if (!d.moved) {
+            // 端のタップ(ブラウザに渡していないので click が来ない)
+            if (d.edge && d.inBook && !cancelled && !hideHint()) { tapAt(e.clientX); }
+            return;
+        }
         if (d.instant) {
-            if (!cancelled && (e.clientX - d.sx) * sign > 30) { go(page + 1, true); }
+            if (!cancelled && (e.clientX - d.sx) * sign > 30) { go(page + d.dir, true); }
             return;
         }
         if (!d.active || !curl) { return; }
         var c = curl;
-        var pulled = Math.abs(c.x - c.cx) / c.w;   // 角を引いた距離(紙面の幅を 1 として)
+        // 指を動かした距離(紙面の幅を 1 として)。前へ戻るときは角が指の2倍動く
+        var pulled = d.dir > 0 ? Math.abs(c.x - c.cx) / c.w : Math.abs(c.x - c.fx) / (2 * c.w);
         var toward = sign * d.vx;                   // めくる向きへの指の速さ(px/ms)
         var commit = !cancelled && toward > -SWIPE_BACK && (pulled > SWIPE_DIST || toward > SWIPE_SPEED);
-        var tx = commit ? c.fx : c.cx;
+        var goEnd = (d.dir > 0) === commit;         // 角を背の向こうまで送るか
+        var tx = goEnd ? c.fx : c.cx;
         var remain = Math.abs(tx - c.x) / (2 * c.w);
         curlAnimate(tx, c.cy, 160 + 320 * remain, commit, false);
     }
 
-    book.addEventListener('pointerup', function (e) { dragEnd(e, false); });
-    book.addEventListener('pointercancel', function (e) { dragEnd(e, true); });
+    document.addEventListener('pointerup', function (e) { dragEnd(e, false); });
+    document.addEventListener('pointercancel', function (e) { dragEnd(e, true); });
 
     var timer = null;
     window.addEventListener('resize', function () {
