@@ -207,6 +207,7 @@ footer {
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
 .book-cover[data-cover="kant-aufklaerung"] { --cover: #fa6741; }
+.book-cover[data-cover="marx-manifest"] { --cover: #fa6741; }
 .book-cover[data-cover="freud-difficulty"] { --cover: #f8a626; }
 /* ここまで自動生成 */
 
