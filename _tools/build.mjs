@@ -102,6 +102,12 @@ const works = data.works.filter((w, n) => {
     if (!w.coverColor) { errors.push(`${where}: genre「${w.genre}」が works.json の genres にない`); }
     else if (!/^#[0-9a-fA-F]{6}$/.test(w.coverColor)) { errors.push(`works.json の genres「${w.genre}」は #rrggbb の形にする`); }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(w.updated)) { errors.push(`${where}: updated は YYYY-MM-DD の形にする`); }
+    // 紙の本の購入リンク(任意)。解説パネルに「広告」と明記して出す
+    if (w.books !== undefined) {
+        const ok = Array.isArray(w.books) && w.books.length > 0 &&
+            w.books.every((b) => b && typeof b.title === 'string' && b.title.trim() && /^https:\/\/\S+$/.test(b.url || ''));
+        if (!ok) { errors.push(`${where}: books は [{ "title": "…", "url": "https://…" }] の形にする(無いなら項目ごと消す)`); return false; }
+    }
     for (const f of ['body.html', 'info.html']) {
         if (!exists(`_works/${w.slug}/${f}`)) { errors.push(`${where}: _works/${w.slug}/${f} がない`); return false; }
     }
@@ -113,6 +119,26 @@ const fullTitle = (w) => `${w.title}(${w.range})`;
 
 // ---------- 生成 ----------
 const outputs = new Map(); // パス → 中身
+
+// 解説パネルの「紙の本で読む」(works.json の books がある作品だけ)
+function booksSection(w) {
+    if (!w.books) { return ''; }
+    return '\n' + [
+        '<section class="shop">',
+        '    <h2>紙の本で読む</h2>',
+        '    <p class="pr-note">広告:以下は書籍の購入ページへのアフィリエイトリンクです。</p>',
+        '    <ul>',
+        ...w.books.map((b) => `        <li><a href="${escapeHtml(b.url)}" rel="sponsored noopener">${escapeHtml(b.title)}</a></li>`),
+        '    </ul>',
+        '</section>'
+    ].join('\n') + '\n';
+}
+
+// 広告を載せるなら、プライバシーポリシーの「掲載していません」を先に直す
+const NO_ADS = '広告やアフィリエイトリンクを掲載していません';
+if (works.some((w) => w.books) && read('privacy.html').includes(NO_ADS)) {
+    errors.push(`privacy.html: 「${NO_ADS}」のままになっている。books を載せる前に、利用するサービスと情報の取り扱いを書く(_works/README.md)`);
+}
 
 // 作品ページ
 // ビューワーの JS・CSS を書きかえたら URL も変わるようにする(?v=…)。
@@ -147,7 +173,7 @@ for (const w of works) {
         OGP_IMAGE: escapeHtml(`${SITE.url}ogp/${w.slug}.png`),
         JSONLD: jsonForScript(jsonld),
         BODY: indent(read(`_works/${w.slug}/body.html`), 4).replace(/^ {4}/, ''),
-        INFO: indent(read(`_works/${w.slug}/info.html`), 8)
+        INFO: indent(read(`_works/${w.slug}/info.html`) + booksSection(w), 8)
     }, `_works/page.html(${w.slug})`);
     outputs.set(`philosophy/${w.slug}.html`, html);
     if (!exists(`ogp/${w.slug}.png`) && !OGP) {
