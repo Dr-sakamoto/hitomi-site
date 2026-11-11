@@ -25,7 +25,7 @@
    | `title` / `author` | `啓蒙とは何か` / `カント` | どこでも |
    | `authorDates` | `1724–1804` | 表紙 |
    | `year` / `language` | `1784` / `ドイツ語` | 書棚の説明、表紙、JSON-LD |
-   | `range` | `全訳` | タイトルの(全訳)、書棚のバッジ |
+   | `range` | `全訳` | タイトルの(全訳)、OGP 画像の札(書棚の表紙には出さない) |
    | `originalTitle` | `Beantwortung der Frage: …` | JSON-LD |
    | `description` | 検索結果・SNS に出る説明文 | meta description、OGP、JSON-LD |
    | `shelfNote` | `「…」。` | 書棚の説明の後半、OGP 画像の一行 |

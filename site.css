@@ -114,7 +114,7 @@ footer::after {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    aspect-ratio: 5 / 7;
+    aspect-ratio: 4 / 5;
     padding: 14px 12px 12px;
     color: var(--black);
     text-decoration: none;
@@ -184,16 +184,6 @@ footer::after {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: .08em;
-}
-
-.book-cover .badge {
-    align-self: flex-start;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .1em;
-    padding: 1px 6px;
-    background: var(--black);
-    color: var(--cover, #fff);
 }
 
 .book-info {
