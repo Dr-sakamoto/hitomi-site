@@ -221,7 +221,7 @@ footer {
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
 .book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; }
-.book-cover[data-cover="freud-difficulty"] { --cover: #c85eb4; }
+.book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; }
 /* ここまで自動生成 */
 
 /* --- ユーザー別の本棚 --- */
@@ -256,13 +256,13 @@ footer {
     display: block;
     height: 100%;
     width: var(--p, 0%);
-    background: #e8c46a;
+    background: var(--black);   /* 金色だと黄色の表紙(現代思想)で見えない */
 }
 .book-cover.is-fav::before {
     content: "★";
     position: absolute;
     top: 6px; right: 8px;
-    color: #e8c46a;
+    color: var(--black);
     font-size: 16px;
 }
 .book-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
