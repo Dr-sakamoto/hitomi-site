@@ -5,7 +5,7 @@
 //
 //   philosophy/<slug>.html       作品ページ(_works/page.html がひな形)
 //   index.html                   書棚と JSON-LD の作品一覧(印のあいだだけ書きかえる)
-//   site.css                     表紙の色(印のあいだだけ書きかえる)
+//   site.css                     表紙の色と肖像の絵(印のあいだだけ書きかえる)
 //   sitemap.xml                  全体
 //
 // 使い方:
@@ -101,6 +101,13 @@ const works = data.works.filter((w, n) => {
     w.coverColor = (data.genres || {})[w.genre];
     if (!w.coverColor) { errors.push(`${where}: genre「${w.genre}」が works.json の genres にない`); }
     else if (!/^#[0-9a-fA-F]{6}$/.test(w.coverColor)) { errors.push(`works.json の genres「${w.genre}」は #rrggbb の形にする`); }
+    // 表紙と OGP 画像に使う著者の肖像の網点(任意)。art/<portrait>-cover.png と -wide.png(作り方は _works/README.md)
+    if (w.portrait !== undefined) {
+        if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(w.portrait)) { errors.push(`${where}: portrait は半角英小文字・数字・ハイフンだけにする`); return false; }
+        for (const f of [`art/${w.portrait}-cover.png`, `art/${w.portrait}-wide.png`]) {
+            if (!exists(f)) { errors.push(`${where}: ${f} がない(非公開リポジトリの studio/thumb/make_site_art.py で作る)`); }
+        }
+    }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(w.updated)) { errors.push(`${where}: updated は YYYY-MM-DD の形にする`); }
     // 紙の本の購入リンク(任意)。解説パネルに「広告」と明記して出す
     if (w.books !== undefined) {
@@ -236,7 +243,8 @@ for (const w of works) {
 
 // 表紙の色(インラインの style は CSP で止まるので CSS に書く)
 {
-    const css = works.map((w) => `.book-cover[data-cover="${w.slug}"] { --cover: ${w.coverColor}; }`).join('\n');
+    const css = works.map((w) => `.book-cover[data-cover="${w.slug}"] { --cover: ${w.coverColor};` +
+        (w.portrait ? ` background-image: url(art/${w.portrait}-cover.png);` : '') + ' }').join('\n');
     outputs.set('site.css', replaceBetweenMarks('site.css', read('site.css'), css, 'css'));
 }
 
@@ -296,7 +304,7 @@ if (OGP) { await makeOgp(); }
 // ---------- OGP 画像 ----------
 async function makeOgp() {
     const targets = works.filter((w) => OGP_ALL || !exists(`ogp/${w.slug}.png`));
-    if (!targets.length) { console.log('OGP 画像:作るものはない'); return; }
+    if (!targets.length && exists('ogp/site.png')) { console.log('OGP 画像:作るものはない'); return; }
     let chromium;
     try {
         // 実行した場所の node_modules か、グローバルにある playwright を使う
@@ -310,11 +318,20 @@ async function makeOgp() {
     const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
     for (const w of targets) {
         const q = new URLSearchParams({ title: w.title, author: w.author, note: w.ogpNote || w.shelfNote, color: w.coverColor });
+        if (w.portrait) { q.set('art', `../art/${w.portrait}-wide.png`); }
         await page.goto(pathToFileURL(abs('ogp/_card.html')).href + '?' + q.toString());
         await page.evaluate(() => document.fonts.ready);
         await page.waitForTimeout(500);
         await page.screenshot({ path: abs(`ogp/${w.slug}.png`) });
         console.log(`書き出し: ogp/${w.slug}.png`);
+    }
+    // 書庫全体用(ogp/site.png):無いとき・作り直すときだけ
+    if (OGP_ALL || !exists('ogp/site.png')) {
+        await page.goto(pathToFileURL(abs('ogp/_card.html')).href);
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: abs('ogp/site.png') });
+        console.log('書き出し: ogp/site.png');
     }
     await browser.close();
 }

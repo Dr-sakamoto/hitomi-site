@@ -2,94 +2,83 @@
 <html lang="ja">
 <!--
   OGP画像(1200×630)の原版。公開ページではない。
+  トンマナは YouTube のサムネイル(案1 色面)と同じ:ジャンルの差し色の地に、著者の肖像の網点と下からの粒(黒)、
+  作品名は黒い箱に白。網点の絵(art/*.png)は「黒の濃さ」だけの画像で、色はここで付ける。
   作品用の画像は node _tools/build.mjs --ogp で _works/works.json から作る。
-  ?title=作品名&author=著者&note=一行説明&color=%232f4a5c で作品用、引数なしで書庫全体用(ogp/site.png)。
-  書庫全体用の例:npx playwright screenshot --viewport-size=1200,630 --wait-for-timeout=1500 \
-        "file://$PWD/ogp/_card.html" ogp/site.png
+  ?title=作品名&author=著者&note=一行説明&color=%23fa6741&art=../art/kant-wide.png で作品用、
+  引数なしで書庫全体用(ogp/site.png。node _tools/build.mjs --ogp-all で作り直す)。
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap">
 <style>
-    * { box-sizing: border-box; }
-    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; }
+    html, body { width: 1200px; height: 630px; overflow: hidden; }
     body {
-        font-family: "Noto Serif JP", serif;
-        background: #e8e1d2;
-        color: #2b2620;
-        display: flex;
-        align-items: center;
-        padding: 56px 72px;
-        gap: 72px;
         position: relative;
+        font-family: "Noto Serif JP", serif;
+        font-feature-settings: "palt" 1;
+        background: var(--cover, #5098f4);
+        color: #000;
     }
-    body::after {
-        content: "";
-        position: absolute;
-        left: 0; right: 0; bottom: 0;
-        height: 34px;
-        background: linear-gradient(#b89a72, #8f7350);
-    }
-    .cover {
-        flex: none;
-        width: 300px;
-        height: 450px;
-        margin-bottom: 26px;
-        padding: 30px 24px 22px;
-        border-radius: 3px 10px 10px 3px;
-        background: var(--cover, #5b3a2e);
-        color: #f6efe2;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-shadow: inset 10px 0 0 rgba(0,0,0,.18), inset 12px 0 0 rgba(255,255,255,.08), 0 18px 34px rgba(0,0,0,.25);
-    }
-    .cover .t {
-        writing-mode: vertical-rl;
-        align-self: flex-end;
-        font-size: 36px;
-        font-weight: 700;
-        letter-spacing: .12em;
-        line-height: 1.4;
-        max-height: 330px;
-        border: 1.5px solid rgba(246,239,226,.5);
-        padding: 16px 10px;
-        background: rgba(0,0,0,.08);
-    }
-    .cover .a { font-size: 22px; letter-spacing: .1em; }
-    .text { flex: 1; min-width: 0; margin-bottom: 26px; }
-    .site { font-size: 28px; letter-spacing: .2em; color: #8a2f24; font-weight: 700; }
-    h1 { font-size: 58px; line-height: 1.35; margin: 18px 0 14px; letter-spacing: .04em; }
-    .by { font-size: 30px; color: #6f665a; }
-    .note { font-size: 26px; line-height: 1.7; margin-top: 26px; color: #2b2620; }
-    .home h1 { font-size: 76px; letter-spacing: .12em; }
+    /* 網点の絵:肖像が無い作品は粒だけ */
+    #art { position: absolute; inset: 0; width: 1200px; height: 630px; object-fit: cover; object-position: center bottom; }
+    .brand { position: absolute; left: 56px; top: 44px; display: flex; align-items: center; gap: .45em; font-size: 26px; font-weight: 900; letter-spacing: .14em; }
+    .brand svg { width: .9em; height: 1em; }
+    .who { position: absolute; left: 56px; top: 0; bottom: 40px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+    .by { font-size: 38px; font-weight: 900; letter-spacing: .08em; }
+    h1 { margin-top: 14px; padding: .12em .34em .16em; background: #000; color: #fff; font-size: 84px; font-weight: 900; line-height: 1.2; letter-spacing: -.01em; }
+    .by small { font-size: .62em; letter-spacing: .14em; margin-left: .9em; padding: .1em .5em .16em; background: #000; color: var(--cover, #fff); vertical-align: .12em; }
+    /* 一行の説明:黒い札に白(後ろの網点と粒に埋もれないように) */
+    .note { margin-top: 16px; max-width: 640px; padding: .3em .8em .4em; background: #000; color: #fff; font-size: 25px; font-weight: 700; line-height: 1.5; letter-spacing: .02em; }
+
+    /* 書庫全体用:黒地に生成りの文字、下に生成りの粒 */
+    body.home { background: #000; color: #f3ede1; }
+    body.home .brand { display: none; }
+    /* 粒の帯(黒の濃さの画像)を反転して白にし、薄く敷く */
+    body.home #art { inset: auto 0 0 0; height: 190px; object-fit: cover; object-position: center bottom; filter: invert(1); opacity: .5; }
+    body.home .who { left: 0; right: 0; bottom: 90px; align-items: center; }
+    body.home .by { font-size: 30px; letter-spacing: .2em; color: #a8a197; font-weight: 700; }
+    body.home h1 { background: none; color: #f3ede1; font-size: 96px; letter-spacing: .1em; display: flex; align-items: center; gap: .3em; padding: 0; margin-top: 22px; }
+    body.home h1 svg { width: .9em; height: 1em; }
+    body.home .note { margin-top: 26px; padding: 0; background: none; color: #f3ede1; font-size: 30px; max-width: none; }
 </style>
 </head>
 <body>
-    <div class="cover" id="cover"><span class="t" id="ct"></span><span class="a" id="ca"></span></div>
-    <div class="text">
-        <div class="site">ほらあな哲学書庫</div>
-        <h1 id="title"></h1>
+    <img id="art" alt="" src="../art/dust-wide.png">
+    <div class="brand"><svg viewBox="0 0 38 42" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="square"><path d="M5 40V19a14 14 0 0 1 28 0v21"/><path d="M12 40V20a7 7 0 0 1 14 0v20"/><path d="M1 40h36"/></svg>ほらあな哲学書庫</div>
+    <div class="who">
         <div class="by" id="by"></div>
+        <h1 id="title"></h1>
         <div class="note" id="note"></div>
     </div>
 <script>
     var q = new URLSearchParams(location.search);
-    var title = q.get('title'), author = q.get('author') || '';
-    if (q.get('color')) document.getElementById('cover').style.setProperty('--cover', q.get('color'));
+    var title = q.get('title');
+    var MARK = '<svg viewBox="0 0 38 42" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="square"><path d="M5 40V19a14 14 0 0 1 28 0v21"/><path d="M12 40V20a7 7 0 0 1 14 0v20"/><path d="M1 40h36"/></svg>';
     if (title) {
-        document.getElementById('ct').textContent = title;
-        document.getElementById('ca').textContent = author;
-        document.getElementById('title').textContent = title + '(全訳)';
-        document.getElementById('by').textContent = author + ' ／ 原典からの日本語訳';
+        if (q.get('color')) document.body.style.setProperty('--cover', q.get('color'));
+        if (q.get('art')) document.getElementById('art').src = q.get('art');
+        var by = document.getElementById('by');
+        by.textContent = q.get('author') || '';
+        var s = document.createElement('small'); s.textContent = '全訳'; by.appendChild(s);
+        var h = document.getElementById('title');
+        h.textContent = '「' + title + '」';
         document.getElementById('note').textContent = q.get('note') || '';
+        // 作品名を枠(幅 640px)に収める:まず1行のまま字を小さくし、54px でも入らなければ2行にする
+        var size = 84;
+        h.style.whiteSpace = 'nowrap';
+        while (size > 54 && h.getBoundingClientRect().width > 640) { size -= 2; h.style.fontSize = size + 'px'; }
+        if (h.getBoundingClientRect().width > 640) {
+            h.style.whiteSpace = 'normal'; h.style.maxWidth = '640px'; size = 66; h.style.fontSize = size + 'px';
+            while (size > 40 && h.getBoundingClientRect().height > size * 2.9) { size -= 2; h.style.fontSize = size + 'px'; }
+        }
     } else {
         document.body.classList.add('home');
-        document.querySelector('.site').textContent = '西洋哲学の古典を、全文日本語訳で';
-        document.getElementById('ct').textContent = '哲学書庫';
-        document.getElementById('ca').textContent = 'ほらあな';
-        document.getElementById('title').textContent = 'ほらあな哲学書庫';
+        document.getElementById('by').textContent = '西洋哲学の古典を、全文日本語訳で';
+        document.getElementById('art').src = '../art/dust.png';
+        document.getElementById('title').innerHTML = MARK + 'ほらあな哲学書庫';
         document.getElementById('note').textContent = '青空文庫にない古典を、原典から全訳して無料公開。';
     }
 </script>
