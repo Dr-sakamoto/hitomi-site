@@ -93,7 +93,7 @@ a:hover, a:focus-visible { color: var(--accent); }
     padding: 14px 12px 12px;
     color: var(--black);
     text-decoration: none;
-    background-color: var(--cover, #5098f4);
+    background-color: var(--cover, #438af1);
     background-image: radial-gradient(circle at center, rgba(0, 0, 0, .22) 0 1.1px, transparent 1.4px);
     background-size: 5px 5px;
     position: relative;
@@ -129,10 +129,24 @@ a:hover, a:focus-visible { color: var(--accent); }
     max-height: none;
 }
 
+.book-cover .foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.4;
+}
+
 .book-cover .author {
     font-size: 14px;
     font-weight: 700;
     letter-spacing: .12em;
+}
+
+/* ジャンル名。色だけに頼らず文字でも伝える */
+.book-cover .genre {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
 }
 
 .book-cover .badge {
@@ -206,8 +220,8 @@ footer {
 
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
-.book-cover[data-cover="kant-aufklaerung"] { --cover: #fa6741; }
-.book-cover[data-cover="freud-difficulty"] { --cover: #f8a626; }
+.book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; }
+.book-cover[data-cover="freud-difficulty"] { --cover: #c85eb4; }
 /* ここまで自動生成 */
 
 /* --- ユーザー別の本棚 --- */
