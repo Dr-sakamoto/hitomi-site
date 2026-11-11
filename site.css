@@ -1,6 +1,8 @@
 /* ===== ほらあな哲学書庫 トップページ =====
    トンマナは YouTube のサムネイル・動画と共通(非公開リポジトリの docs/YOUTUBE.md):
    黒地・生成りの文字・ジャンルごとの差し色・網点・Noto Serif JP(仮名と約物を詰める)。
+   網点の絵(art/*.png)は「黒の濃さ」だけの画像で、色はここで付ける。作り方は非公開リポジトリの
+   studio/thumb/make_site_art.py(サムネイルと同じ道具で描く)。
    サイトは黒地の1テーマだけにする(読む画面 philosophy/reader.css は読みやすさ優先で別)。 */
 
 :root {
@@ -18,6 +20,7 @@
 
 body {
     margin: 0;
+    overflow-x: clip;      /* 見出しの下の粒の帯を画面の幅いっぱいに広げるため */
     background: var(--desk);
     color: var(--ink);
     font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
@@ -38,7 +41,27 @@ a:hover, a:focus-visible { color: var(--accent); }
 .masthead {
     max-width: 960px;
     margin: 0 auto;
-    padding: 56px 16px 40px;
+    padding: 56px 16px 120px;
+    margin-bottom: 28px;
+    position: relative;
+}
+
+/* 見出しの下の粒の帯:細かい点が下から上へ小さくなって消える(古びた印刷・砂ぼこり)。
+   サムネイル・動画の「地の粒」と同じ作り。画像を mask にして、生成りで薄く塗る */
+.masthead::after,
+footer::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 100vw;
+    height: 110px;
+    transform: translateX(-50%);
+    background: var(--ink);
+    opacity: .34;
+    -webkit-mask: url(art/dust.png) center bottom / auto 100% no-repeat;
+    mask: url(art/dust.png) center bottom / auto 100% no-repeat;
+    pointer-events: none;
 }
 
 .masthead h1 {
@@ -84,7 +107,9 @@ a:hover, a:focus-visible { color: var(--accent); }
     min-width: 0;
 }
 
-/* 表紙:ジャンルの差し色に網点、作品名は黒い箱に白(サムネイルの案1と同じ組み) */
+/* 表紙:ジャンルの差し色の地に、著者の肖像の網点と下からの粒(黒)。作品名は黒い箱に白。
+   サムネイルの案1(色面)と同じ組み。肖像の絵は作品ごとに下の自動生成の所で指定する。
+   肖像がまだ無い作品は、粒だけの絵(art/dust-cover.png)になる */
 .book-cover {
     display: flex;
     flex-direction: column;
@@ -94,8 +119,10 @@ a:hover, a:focus-visible { color: var(--accent); }
     color: var(--black);
     text-decoration: none;
     background-color: var(--cover, #438af1);
-    background-image: radial-gradient(circle at center, rgba(0, 0, 0, .22) 0 1.1px, transparent 1.4px);
-    background-size: 5px 5px;
+    background-image: url(art/dust-cover.png);
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
     position: relative;
     overflow: hidden;
     transition: transform .2s;
@@ -136,14 +163,24 @@ a:hover, a:focus-visible { color: var(--accent); }
     line-height: 1.4;
 }
 
+/* 著者名は黒い札に白(後ろの網点と粒に埋もれないように) */
 .book-cover .author {
-    font-size: 14px;
+    align-self: flex-start;
+    padding: 2px 8px 3px;
+    background: var(--black);
+    color: #fff;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: .12em;
 }
 
 /* ジャンル名。色だけに頼らず文字でも伝える */
+/* 著者名と同じく黒い札に載せる(後ろの網点と粒に埋もれないように)。字は表紙の色 */
 .book-cover .genre {
+    align-self: flex-start;
+    padding: 1px 6px 2px;
+    background: var(--black);
+    color: var(--cover, #fff);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: .08em;
@@ -187,11 +224,13 @@ footer {
     margin: 0 auto;
     color: var(--ink-soft);
     font-size: 13px;
-    padding: 56px 16px 40px;
+    padding: 56px 16px 130px;
+    position: relative;
 }
 
 @media (max-width: 600px) {
-    .masthead { padding: 40px 16px 28px; }
+    .masthead { padding: 40px 16px 96px; }
+    .masthead::after, footer::after { height: 80px; }
     .shelf { grid-template-columns: repeat(2, 1fr); gap: 28px 14px; }
     .book-cover .title { font-size: 16px; }
     .book-cover .title.long { font-size: 13px; letter-spacing: .02em; }
@@ -220,8 +259,8 @@ footer {
 
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
-.book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; }
-.book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; }
+.book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; background-image: url(art/kant-cover.png); }
+.book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; background-image: url(art/freud-cover.png); }
 /* ここまで自動生成 */
 
 /* --- ユーザー別の本棚 --- */
