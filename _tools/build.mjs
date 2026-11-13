@@ -210,7 +210,7 @@ for (const w of works) {
             '    <div class="book-meta">',
             '        <span class="progress-text">未読</span>',
             `        <select class="status-select" aria-label="「${t}」の読書状態">`,
-            '            <option value="">未設定</option>',
+            '            <option value="">状態なし</option>',
             '            <option value="want">読みたい</option>',
             '            <option value="reading">読書中</option>',
             '            <option value="done">読了</option>',

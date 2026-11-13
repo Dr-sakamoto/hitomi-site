@@ -76,21 +76,36 @@
     <h2 class="section-title">書棚</h2>
 
     <div class="profile-bar" id="profile-bar">
-        <div class="profile-row">
-            <label for="profile-select">ユーザー</label>
-            <select id="profile-select" aria-label="本棚のユーザーを切り替え"></select>
-            <button type="button" id="profile-add">追加</button>
-            <button type="button" id="profile-rename">名前変更</button>
-            <button type="button" id="profile-delete" hidden>削除</button>
+        <div class="continue" id="continue" hidden>
+            <span class="continue-label">読みかけ</span>
+            <a class="continue-link" id="continue-link" href="#"></a>
         </div>
         <div class="filter-row" role="group" aria-label="本棚の絞り込み">
-            <button type="button" data-filter="all" aria-pressed="true">すべて</button>
-            <button type="button" data-filter="want" aria-pressed="false">読みたい</button>
-            <button type="button" data-filter="reading" aria-pressed="false">読書中</button>
-            <button type="button" data-filter="done" aria-pressed="false">読了</button>
-            <button type="button" data-filter="fav" aria-pressed="false">お気に入り</button>
+            <button type="button" data-filter="all" aria-pressed="true">すべて<span class="count"></span></button>
+            <button type="button" data-filter="reading" aria-pressed="false">読書中<span class="count"></span></button>
+            <button type="button" data-filter="want" aria-pressed="false">読みたい<span class="count"></span></button>
+            <button type="button" data-filter="done" aria-pressed="false">読了<span class="count"></span></button>
+            <button type="button" data-filter="fav" aria-pressed="false">★ お気に入り<span class="count"></span></button>
         </div>
-        <p class="profile-note">本棚の記録はこの端末のブラウザにだけ保存され、サーバーには送られません。</p>
+        <details class="profile-box" id="profile-box">
+            <summary>本棚のユーザー:<b id="profile-current">ゲスト</b></summary>
+            <div class="profile-panel">
+                <div class="profile-row">
+                    <label for="profile-select">切り替え</label>
+                    <select id="profile-select"></select>
+                </div>
+                <form class="profile-row" id="profile-form">
+                    <label for="profile-name">名前</label>
+                    <input id="profile-name" type="text" maxlength="20" autocomplete="off" placeholder="20文字まで">
+                    <button type="submit" id="profile-add">新しく追加</button>
+                    <button type="button" id="profile-rename">今のユーザーの名前にする</button>
+                </form>
+                <div class="profile-row">
+                    <button type="button" id="profile-delete" class="danger" hidden>このユーザーを削除</button>
+                </div>
+                <p class="profile-note">家族などで端末を共有するときに、人ごとに本棚(読書状態・お気に入り・読んだ位置)を分けられます。記録はこの端末のブラウザにだけ保存され、サーバーには送られません。</p>
+            </div>
+        </details>
     </div>
 
     <ul class="shelf">
@@ -108,7 +123,7 @@
             <div class="book-meta">
                 <span class="progress-text">未読</span>
                 <select class="status-select" aria-label="「啓蒙とは何か」の読書状態">
-                    <option value="">未設定</option>
+                    <option value="">状態なし</option>
                     <option value="want">読みたい</option>
                     <option value="reading">読書中</option>
                     <option value="done">読了</option>
@@ -129,7 +144,7 @@
             <div class="book-meta">
                 <span class="progress-text">未読</span>
                 <select class="status-select" aria-label="「共産党宣言」の読書状態">
-                    <option value="">未設定</option>
+                    <option value="">状態なし</option>
                     <option value="want">読みたい</option>
                     <option value="reading">読書中</option>
                     <option value="done">読了</option>
@@ -150,7 +165,7 @@
             <div class="book-meta">
                 <span class="progress-text">未読</span>
                 <select class="status-select" aria-label="「精神分析のある困難」の読書状態">
-                    <option value="">未設定</option>
+                    <option value="">状態なし</option>
                     <option value="want">読みたい</option>
                     <option value="reading">読書中</option>
                     <option value="done">読了</option>
@@ -160,7 +175,7 @@
         </li>
         <!-- ここまで自動生成 -->
     </ul>
-    <p class="shelf-empty" id="shelf-empty" hidden>この条件に合う本はありません。</p>
+    <p class="shelf-empty" id="shelf-empty" hidden>この条件に合う本はまだありません。<button type="button" id="shelf-show-all">すべての本を表示</button></p>
 
     <h2 class="section-title">この書庫について</h2>
     <div class="about">

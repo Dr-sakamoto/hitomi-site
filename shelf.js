@@ -9,7 +9,6 @@
     var ns = 'horaana:';
     var DEFAULT_ID = 'default';
     var STATUSES = ['', 'want', 'reading', 'done'];
-    var LABELS = { '': '未設定', want: '読みたい', reading: '読書中', done: '読了' };
 
     function read(key, fallback) {
         try {
@@ -67,7 +66,13 @@
 
     var select = document.getElementById('profile-select');
     var filterBtns = bar.querySelectorAll('[data-filter]');
-    var filter = 'all';
+    var FILTERS = ['all', 'reading', 'want', 'done', 'fav'];
+    // 前回の絞り込みを覚えておく(この端末だけの便利機能)
+    var filter = read('filter', 'all');
+    if (FILTERS.indexOf(filter) < 0) filter = 'all';
+    var nameInput = document.getElementById('profile-name');
+    var continueBox = document.getElementById('continue');
+    var continueLink = document.getElementById('continue-link');
     var items = list.querySelectorAll('li[data-book]');
     var emptyMsg = document.getElementById('shelf-empty');
 
@@ -88,6 +93,7 @@
             select.appendChild(o);
         });
         document.getElementById('profile-delete').hidden = profiles.current === DEFAULT_ID;
+        document.getElementById('profile-current').textContent = currentProfile().name;
     }
 
     function ratioOf(path) {
@@ -106,6 +112,8 @@
     function renderBooks() {
         var shelf = loadShelf(profiles.current);
         var shown = 0;
+        var counts = { all: 0, reading: 0, want: 0, done: 0, fav: 0 };
+        var resume = null;   // 「読みかけ」に出す本:最後に開いた読書中の本
         for (var i = 0; i < items.length; i++) {
             var li = items[i];
             var key = li.getAttribute('data-book');
@@ -121,8 +129,19 @@
             favBtn.textContent = fav ? '★' : '☆';
             var pct = Math.round(ratio * 100);
             li.querySelector('.progress-bar').style.setProperty('--p', pct + '%');
-            li.querySelector('.progress-text').textContent = pct > 0 ? pct + '% 読了位置' : '未読';
+            li.querySelector('.progress-text').textContent =
+                ratio >= 0.98 ? '最後まで読んだ' : pct > 0 ? pct + '% まで読んだ' : 'まだ開いていない';
             li.querySelector('.book-cover').classList.toggle('is-fav', fav);
+
+            counts.all++;
+            if (counts[status] !== undefined) counts[status]++;
+            if (fav) counts.fav++;
+            if (status === 'reading' && ratio > 0 && ratio < 0.98) {
+                var opened = typeof entry.opened === 'number' ? entry.opened : 0;
+                if (!resume || opened > resume.opened || (opened === resume.opened && ratio > resume.ratio)) {
+                    resume = { li: li, key: key, opened: opened, ratio: ratio };
+                }
+            }
 
             var visible = filter === 'all' ||
                 (filter === 'fav' ? fav : status === filter);
@@ -131,8 +150,18 @@
         }
         if (emptyMsg) emptyMsg.hidden = shown !== 0;
         for (var j = 0; j < filterBtns.length; j++) {
-            filterBtns[j].setAttribute('aria-pressed',
-                filterBtns[j].getAttribute('data-filter') === filter ? 'true' : 'false');
+            var fk = filterBtns[j].getAttribute('data-filter');
+            filterBtns[j].setAttribute('aria-pressed', fk === filter ? 'true' : 'false');
+            var c = filterBtns[j].querySelector('.count');
+            if (c) c.textContent = counts[fk] ? ' ' + counts[fk] : '';
+        }
+        if (continueBox) {
+            continueBox.hidden = !resume;
+            if (resume) {
+                continueLink.href = resume.key;
+                continueLink.textContent = '「' + resume.li.querySelector('.title').textContent + '」' +
+                    Math.round(resume.ratio * 100) + '% から続きを読む';
+            }
         }
     }
 
@@ -154,6 +183,14 @@
                 if (STATUSES.indexOf(v) < 0) return;
                 updateEntry(key, { status: v });
             });
+            // 最後に開いた本を「読みかけ」に出すため、開いた時刻を記録する
+            li.querySelector('.book-cover').addEventListener('click', function () {
+                var shelf = loadShelf(profiles.current);
+                var entry = shelf[key] || {};
+                entry.opened = Date.now();
+                shelf[key] = entry;
+                write(shelfKey(profiles.current), JSON.stringify(shelf));
+            });
             li.querySelector('.fav-btn').addEventListener('click', function () {
                 var shelf = loadShelf(profiles.current);
                 updateEntry(key, { fav: !(shelf[key] && shelf[key].fav === true) });
@@ -165,6 +202,7 @@
     for (var f = 0; f < filterBtns.length; f++) {
         filterBtns[f].addEventListener('click', function (e) {
             filter = e.currentTarget.getAttribute('data-filter');
+            write('filter', filter);
             renderBooks();
         });
     }
@@ -183,8 +221,37 @@
         renderBooks();
     });
 
-    document.getElementById('profile-add').addEventListener('click', function () {
-        var name = cleanName(window.prompt('新しいユーザー名(20文字まで)'));
+    if (continueLink) {
+        continueLink.addEventListener('click', function () {
+            var key = continueLink.getAttribute('href');
+            var shelf = loadShelf(profiles.current);
+            var entry = shelf[key] || {};
+            entry.opened = Date.now();
+            shelf[key] = entry;
+            write(shelfKey(profiles.current), JSON.stringify(shelf));
+        });
+    }
+
+    var showAll = document.getElementById('shelf-show-all');
+    if (showAll) {
+        showAll.addEventListener('click', function () {
+            filter = 'all';
+            write('filter', filter);
+            renderBooks();
+        });
+    }
+
+    // 名前の欄が空のときは、欄に戻って入力をうながす
+    function nameFromInput() {
+        var name = cleanName(nameInput.value);
+        if (!name) { nameInput.focus(); return ''; }
+        nameInput.value = '';
+        return name;
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = nameFromInput();
         if (!name) return;
         var id = 'u' + Date.now().toString(36);
         profiles.list.push({ id: id, name: name });
@@ -196,7 +263,7 @@
 
     document.getElementById('profile-rename').addEventListener('click', function () {
         var p = currentProfile();
-        var name = cleanName(window.prompt('ユーザー名を変更', p.name));
+        var name = nameFromInput();
         if (!name) return;
         p.name = name;
         saveProfiles();
