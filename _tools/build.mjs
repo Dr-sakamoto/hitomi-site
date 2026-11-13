@@ -195,12 +195,10 @@ for (const w of works) {
     const shelf = works.map((w) => {
         const href = `philosophy/${w.slug}.html`;
         const t = escapeHtml(w.title);
-        // 長い題名は表紙で途中から折り返すと読みにくいので、字を小さくして1列に収める(site.css の .title.long)
-        const titleClass = [...w.title].length >= 8 ? 'title long' : 'title';
         return [
             `<li data-book="${href}">`,
             `    <a class="book-cover" href="${href}" data-cover="${w.slug}">`,
-            `        <span class="${titleClass}">${t}</span>`,
+            `        <span class="title">${t}</span>`,
             // 色だけでジャンルを伝えない(色覚によっては見分けにくい組がある)ので、名前も出す
             '        <span class="foot">',
             `            <span class="author">${escapeHtml(w.author)}</span>`,
@@ -212,7 +210,7 @@ for (const w of works) {
             '    <div class="book-meta">',
             '        <span class="progress-text">未読</span>',
             `        <select class="status-select" aria-label="「${t}」の読書状態">`,
-            '            <option value="">未設定</option>',
+            '            <option value="">状態なし</option>',
             '            <option value="want">読みたい</option>',
             '            <option value="reading">読書中</option>',
             '            <option value="done">読了</option>',
@@ -244,9 +242,11 @@ for (const w of works) {
     outputs.set('index.html', html);
 }
 
-// 表紙の色(インラインの style は CSP で止まるので CSS に書く)
+// 表紙の色と、題名・著者名の字数(インラインの style は CSP で止まるので CSS に書く)。
+// 字数は site.css で字の大きさを決めるのに使う。題名も著者名も途中で折り返さず、表紙の幅に合わせて縮む
 {
     const css = works.map((w) => `.book-cover[data-cover="${w.slug}"] { --cover: ${w.coverColor};` +
+        ` --len: ${[...w.title].length}; --alen: ${[...w.author].length}; --glen: ${[...w.genre].length};` +
         (w.portrait ? ` background-image: url(art/${w.portrait}-cover.png);` : '') + ' }').join('\n');
     outputs.set('site.css', replaceBetweenMarks('site.css', read('site.css'), css, 'css'));
 }

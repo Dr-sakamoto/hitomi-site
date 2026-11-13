@@ -97,25 +97,31 @@ footer::after {
 .shelf {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 36px 24px;
+    gap: 40px 24px;
     padding: 0;
     margin: 0;
     list-style: none;
 }
 
+/* 1冊ぶんの枠。表紙の中の字は、この枠の幅(cqw = 幅の1%)に合わせて縮む。
+   そのため、画面の幅や題名・著者名の長さが変わっても表紙の組みが崩れない。
+   下の操作欄は枠の底にそろえる(紹介文の長さが違っても、横に並ぶ本の操作欄の高さがそろう) */
 .shelf li {
     min-width: 0;
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
 }
 
 /* 表紙:ジャンルの差し色の地に、著者の肖像の網点と下からの粒(黒)。作品名は黒い箱に白。
    サムネイルの案1(色面)と同じ組み。肖像の絵は作品ごとに下の自動生成の所で指定する。
-   肖像がまだ無い作品は、粒だけの絵(art/dust-cover.png)になる */
+   肖像がまだ無い作品は、粒だけの絵(art/dust-cover.png)になる。
+   組み:右上に題名(縦書き1列)、左下に著者名とジャンル。どちらも位置を固定し、
+   字の大きさを字数(--len・--alen・--glen。build.mjs が書く)と表紙の幅から決めるので、
+   題名が2列に折れたり、著者名の札が折り返して題名に重なったりしない */
 .book-cover {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    display: block;
     aspect-ratio: 4 / 5;
-    padding: 14px 12px 12px;
     color: var(--black);
     text-decoration: none;
     background-color: var(--cover, #438af1);
@@ -126,6 +132,10 @@ footer::after {
     position: relative;
     overflow: hidden;
     transition: transform .2s;
+    --len: 6;
+    --alen: 5;
+    --glen: 6;
+    --pad: 7cqw;
 }
 
 .book-cover:hover,
@@ -134,63 +144,73 @@ footer::after {
     color: var(--black);
 }
 
+/* 題名:縦書き1列。字の高さの合計が表紙の上側(約72cqw)に収まる大きさにする。短い題名は 11.5cqw で頭打ち */
 .book-cover .title {
+    position: absolute;
+    top: var(--pad);
+    right: var(--pad);
     writing-mode: vertical-rl;
-    align-self: flex-end;
-    font-size: 19px;
+    white-space: nowrap;
+    font-size: 17px;
+    font-size: min(11.5cqw, calc(72cqw / var(--len)));
     font-weight: 900;
     letter-spacing: .04em;
-    line-height: 1.35;
-    max-height: 12em;
-    max-width: 100%;
-    overflow: hidden;
-    padding: 12px 7px;
+    line-height: 1.3;
+    padding: 5cqw 3.5cqw;
     background: var(--black);
     color: #fff;
-}
-
-/* 長い題名は字を小さくして1列に収める(途中で折り返すと読みにくい) */
-.book-cover .title.long {
-    font-size: 15px;
-    letter-spacing: .04em;
-    max-height: none;
 }
 
 .book-cover .foot {
+    position: absolute;
+    left: var(--pad);
+    right: var(--pad);
+    bottom: var(--pad);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    align-items: flex-start;
+    gap: 1.5cqw;
     line-height: 1.4;
 }
 
-/* 著者名は黒い札に白(後ろの網点と粒に埋もれないように) */
+/* 著者名は黒い札に白(後ろの網点と粒に埋もれないように)。1行のまま、表紙の幅に収まる大きさにする */
 .book-cover .author {
-    align-self: flex-start;
-    padding: 2px 8px 3px;
+    max-width: 100%;
+    white-space: nowrap;
+    padding: .15em .5em .2em;
     background: var(--black);
     color: #fff;
-    font-size: 13px;
+    font-size: 12px;
+    font-size: min(7.5cqw, calc(86cqw / (var(--alen) * 1.06 + 1)));
     font-weight: 700;
-    letter-spacing: .12em;
+    letter-spacing: .06em;
 }
 
 /* ジャンル名。色だけに頼らず文字でも伝える */
 /* 著者名と同じく黒い札に載せる(後ろの網点と粒に埋もれないように)。字は表紙の色 */
 .book-cover .genre {
-    align-self: flex-start;
-    padding: 1px 6px 2px;
+    max-width: 100%;
+    white-space: nowrap;
+    padding: .1em .5em .2em;
     background: var(--black);
     color: var(--cover, #fff);
-    font-size: 11px;
+    font-size: 10px;
+    font-size: min(6.4cqw, calc(86cqw / (var(--glen) * 1.08 + 1)));
     font-weight: 700;
     letter-spacing: .08em;
 }
 
+/* 紹介文は3行まで(長いと操作欄の位置が本ごとにずれるので) */
 .book-info {
     margin-top: 10px;
     font-size: 13px;
     line-height: 1.7;
     color: var(--ink-soft);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
 }
 
 /* --- この書庫について --- */
@@ -222,8 +242,6 @@ footer {
     .masthead { padding: 40px 16px 96px; }
     .masthead::after, footer::after { height: 80px; }
     .shelf { grid-template-columns: repeat(2, 1fr); gap: 28px 14px; }
-    .book-cover .title { font-size: 16px; }
-    .book-cover .title.long { font-size: 13px; letter-spacing: .02em; }
     .about { padding: 18px 20px; }
 }
 
@@ -249,16 +267,17 @@ footer {
 
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
-.book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; background-image: url(art/kant-cover.png); }
-.book-cover[data-cover="marx-manifest"] { --cover: #10a760; background-image: url(art/marx-cover.png); }
-.book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; background-image: url(art/freud-cover.png); }
+.book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; --len: 6; --alen: 3; --glen: 6; background-image: url(art/kant-cover.png); }
+.book-cover[data-cover="marx-manifest"] { --cover: #10a760; --len: 5; --alen: 10; --glen: 7; background-image: url(art/marx-cover.png); }
+.book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; --len: 9; --alen: 4; --glen: 4; background-image: url(art/freud-cover.png); }
 /* ここまで自動生成 */
 
 /* --- ユーザー別の本棚 --- */
-.profile-bar { margin: 0 0 20px; font-size: 14px; }
-.profile-row, .filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.profile-bar { margin: 0 0 24px; font-size: 14px; }
 .profile-bar select,
 .profile-bar button,
+.profile-bar input,
+.shelf-empty button,
 .book-meta select,
 .book-meta button {
     font: inherit;
@@ -266,14 +285,69 @@ footer {
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: 3px;
-    padding: 4px 10px;
+    padding: 6px 12px;
     cursor: pointer;
 }
+.profile-bar input { cursor: text; min-width: 0; flex: 1 1 10em; }
 .profile-bar button[hidden] { display: none; }
+.profile-bar button:hover, .book-meta button:hover, .shelf-empty button:hover { border-color: var(--ink-soft); }
+
+/* 読みかけの本へのいちばん近い入口 */
+.continue {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--paper);
+    border-left: 3px solid var(--ink);
+}
+.continue[hidden] { display: none; }
+.continue-label { flex: none; font-size: 12px; letter-spacing: .2em; color: var(--ink-soft); }
+.continue-link { font-weight: 700; text-decoration: none; }
+.continue-link::after { content: " →"; }
+.continue-link:hover { text-decoration: underline; }
+
+/* 絞り込み:1行に並べ、狭い画面では横にすべらせる(折り返して段がずれないように) */
+.filter-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -16px 12px;
+    padding: 0 16px 2px;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-row button { flex: none; border-radius: 999px; padding: 6px 16px; }
 .filter-row button[aria-pressed="true"] { background: var(--accent); color: var(--black); border-color: var(--accent); }
-.profile-note { margin: 0; color: var(--ink-soft); font-size: 12px; }
+.filter-row .count { margin-left: .4em; font-size: 12px; opacity: .65; }
+
+/* ユーザーの管理はたまにしか使わないので、たたんでおく */
+.profile-box summary {
+    display: inline-block;
+    cursor: pointer;
+    color: var(--ink-soft);
+    font-size: 13px;
+    list-style: none;
+}
+.profile-box summary::-webkit-details-marker { display: none; }
+.profile-box summary::after { content: " ▾"; }
+.profile-box[open] summary::after { content: " ▴"; }
+.profile-box summary b { color: var(--ink); font-weight: 700; }
+.profile-panel {
+    margin-top: 10px;
+    padding: 16px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+}
+.profile-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; }
+.profile-row label { flex: none; width: 4.5em; color: var(--ink-soft); font-size: 13px; }
+.profile-row .danger { color: #ff8a80; }
+.profile-note { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.7; }
 .shelf li[hidden] { display: none; }
 .shelf-empty { color: var(--ink-soft); text-align: center; margin: 16px 0 0; }
+.shelf-empty[hidden] { display: none; }
+.shelf-empty button { margin-left: 8px; }
 
 .book-cover .progress-bar {
     position: absolute;
@@ -291,12 +365,18 @@ footer {
 .book-cover.is-fav::before {
     content: "★";
     position: absolute;
-    top: 6px; right: 8px;
+    top: 4cqw; left: var(--pad);   /* 右上は題名があるので左上 */
     color: var(--black);
-    font-size: 16px;
+    font-size: 10cqw;
+    line-height: 1;
 }
-.book-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
+.book-meta { display: flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 8px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
 .book-meta .progress-text { flex: 1 1 100%; }
-.book-meta select { flex: 1; min-width: 0; padding: 2px 6px; }
-.book-meta .fav-btn { padding: 2px 8px; font-size: 16px; line-height: 1.2; }
+.book-meta select { flex: 1; min-width: 0; min-height: 36px; padding: 4px 6px; }   /* 指で押しやすい高さ */
+.book-meta .fav-btn { min-width: 36px; min-height: 36px; padding: 2px 8px; font-size: 16px; line-height: 1.2; }
 .book-meta .fav-btn[aria-pressed="true"] { color: #b8860b; }
+
+/* iPhone は 16px 未満の入力欄を押すと画面が拡大されるので、狭い画面では 16px にする */
+@media (max-width: 600px) {
+    .profile-bar input, .profile-bar select, .book-meta select { font-size: 16px; }
+}
