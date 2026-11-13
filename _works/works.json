@@ -23,6 +23,21 @@
   ],
   "works": [
     {
+      "slug": "plato-apology",
+      "title": "ソクラテスの弁明",
+      "author": "プラトン",
+      "authorDates": "前427–前347",
+      "year": "前399",
+      "language": "ギリシア語",
+      "range": "全訳",
+      "originalTitle": "Ἀπολογία Σωκράτους",
+      "description": "プラトン『ソクラテスの弁明』の全文を、ギリシア語原典から日本語に無料で翻訳。デルポイの神託と「知らないことを知らないと思っている」、死刑の判決を受けたソクラテスの最後の言葉まで。",
+      "shelfNote": "「知らないことを知らないと思っている」。",
+      "updated": "2026-11-13",
+      "genre": "古代哲学",
+      "portrait": "plato"
+    },
+    {
       "slug": "kant-aufklaerung",
       "title": "啓蒙とは何か",
       "author": "カント",
