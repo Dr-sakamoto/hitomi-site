@@ -268,7 +268,7 @@ footer {
 /* 表紙の色。_works/works.json の genre(genres の色)から作る */
 /* ここから自動生成(_tools/build.mjs) */
 .book-cover[data-cover="plato-apology"] { --cover: #e15955; --len: 8; --alen: 4; --glen: 4; background-image: url(art/plato-cover.png); }
-.book-cover[data-cover="seneca-brevitate"] { --cover: #e15955; --len: 9; --alen: 3; --glen: 4; }
+.book-cover[data-cover="seneca-brevitate"] { --cover: #e15955; --len: 9; --alen: 3; --glen: 4; background-image: url(art/seneca-cover.png); }
 .book-cover[data-cover="kant-aufklaerung"] { --cover: #139cb6; --len: 6; --alen: 3; --glen: 6; background-image: url(art/kant-cover.png); }
 .book-cover[data-cover="marx-manifest"] { --cover: #10a760; --len: 5; --alen: 10; --glen: 7; background-image: url(art/marx-cover.png); }
 .book-cover[data-cover="freud-difficulty"] { --cover: #dfb100; --len: 9; --alen: 4; --glen: 4; background-image: url(art/freud-cover.png); }
