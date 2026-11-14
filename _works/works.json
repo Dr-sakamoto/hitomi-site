@@ -38,6 +38,20 @@
       "portrait": "plato"
     },
     {
+      "slug": "seneca-brevitate",
+      "title": "人生の短さについて",
+      "author": "セネカ",
+      "authorDates": "前4頃–65",
+      "year": 49,
+      "language": "ラテン語",
+      "range": "全訳",
+      "originalTitle": "De Brevitate Vitae",
+      "description": "セネカ『人生の短さについて』の全文を、ラテン語原典から日本語に無料で翻訳。「わたしたちは短い生を受け取ったのではなく、短くしたのである」。ストア派の哲学者が、時間を奪われる生き方を戒める。",
+      "shelfNote": "「わたしたちは短い生を受け取ったのではなく、短くしたのである」。",
+      "updated": "2026-11-14",
+      "genre": "古代哲学"
+    },
+    {
       "slug": "kant-aufklaerung",
       "title": "啓蒙とは何か",
       "author": "カント",
