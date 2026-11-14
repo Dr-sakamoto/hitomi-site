@@ -201,6 +201,15 @@ body.vertical .pages h2 {
     margin: 0 2em 0 1em;
 }
 
+/* 本文の区切り番号(①、（21）など)。縦書きでは数字を縦中横にする */
+.num {
+    color: var(--ink-soft);
+}
+
+body.vertical .num .tcy {
+    text-combine-upright: all;
+}
+
 .cover {
     break-after: column;
     height: 100%;
